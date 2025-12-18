@@ -11,7 +11,8 @@ SCREEN_WIDTH, SCREEN_HEIGHT = screen.get_size()
 clock = pygame.time.Clock()
 
 network = NetworkClient(SERVER_HOST, SERVER_PORT)
-scene = GameplayScene()
+screen_width, screen_height = screen.get_size()
+scene = GameplayScene(screen_width, screen_height)
 game = Game(screen, network, scene)
 
 game.run(clock)
