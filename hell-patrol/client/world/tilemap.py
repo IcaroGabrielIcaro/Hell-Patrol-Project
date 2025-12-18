@@ -10,21 +10,27 @@ class TileMap:
         self.tile = tile_image
 
     def draw(self, screen, camera):
-        # Descobre quais tiles estão visíveis pela câmera
-        start_x = camera.x // TILE_SIZE
-        start_y = camera.y // TILE_SIZE
+        # Área visível em coordenadas do mundo
+        left   = camera.x
+        top    = camera.y
+        right  = camera.x + camera.screen_width
+        bottom = camera.y + camera.screen_height
 
-        end_x = (camera.x + camera.screen_width) // TILE_SIZE + 1
-        end_y = (camera.y + camera.screen_height) // TILE_SIZE + 1
+        # Converte pixels → índices de tile
+        start_x = left // TILE_SIZE
+        start_y = top // TILE_SIZE
+        end_x   = (right  - 1) // TILE_SIZE
+        end_y   = (bottom - 1) // TILE_SIZE
 
-        # Clamp para não desenhar fora do mundo
+        # Clamp para os limites do mundo lógico
         start_x = max(0, start_x)
         start_y = max(0, start_y)
-        end_x = min(WORLD_TILES_X, end_x)
-        end_y = min(WORLD_TILES_Y, end_y)
+        end_x   = min(WORLD_TILES_X - 1, end_x)
+        end_y   = min(WORLD_TILES_Y - 1, end_y)
 
-        for y in range(start_y, end_y):
-            for x in range(start_x, end_x):
+        # Desenha apenas tiles válidos
+        for y in range(start_y, end_y + 1):
+            for x in range(start_x, end_x + 1):
                 world_x = x * TILE_SIZE
                 world_y = y * TILE_SIZE
 

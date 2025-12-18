@@ -1,6 +1,6 @@
 from shared.world import WORLD_WIDTH, WORLD_HEIGHT, PLAYER_SIZE
 
-SPEED = 5
+SPEED = 10
 
 class Player:
     def __init__(self):
@@ -12,15 +12,17 @@ class Player:
         self.x += dx * SPEED
         self.y += dy * SPEED
 
+        # Clamp horizontal
         if self.x < 0:
             self.x = 0
-        elif self.x > WORLD_WIDTH - PLAYER_SIZE:
-            self.x = WORLD_WIDTH - PLAYER_SIZE
+        elif self.x > WORLD_WIDTH - self.size:
+            self.x = WORLD_WIDTH - self.size
 
+        # Clamp vertical
         if self.y < 0:
             self.y = 0
-        elif self.y > WORLD_HEIGHT - PLAYER_SIZE:
-            self.y = WORLD_HEIGHT - PLAYER_SIZE
+        elif self.y > WORLD_HEIGHT - self.size:
+            self.y = WORLD_HEIGHT - self.size
 
     def to_dict(self):
         return {
