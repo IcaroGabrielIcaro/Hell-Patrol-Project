@@ -3,6 +3,7 @@ from client.config import *
 from client.core.network import NetworkClient
 from client.core.game import Game
 from client.scenes.gameplay import GameplayScene
+from client.world.tilemap import TileMap
 
 pygame.init()
 
@@ -12,7 +13,11 @@ clock = pygame.time.Clock()
 
 network = NetworkClient(SERVER_HOST, SERVER_PORT)
 screen_width, screen_height = screen.get_size()
-scene = GameplayScene(screen_width, screen_height)
+tile_image = pygame.image.load(
+    "client/assets/sprites/tiles/hellTile1.png"
+).convert()
+
+scene = GameplayScene(screen_width, screen_height, tile_image)
 game = Game(screen, network, scene)
 
 game.run(clock)
