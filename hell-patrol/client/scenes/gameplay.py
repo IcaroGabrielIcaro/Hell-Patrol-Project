@@ -7,7 +7,7 @@ class GameplayScene:
 
     def update_state(self, state):
         self.players = {
-            pid: Player(p["x"], p["y"])
+            pid: Player(p["x"], p["y"], p["size"])
             for pid, p in state["players"].items()
         }
 
