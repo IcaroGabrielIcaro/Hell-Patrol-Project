@@ -1,52 +1,31 @@
 import pygame
-import socket
-import json
+from client.config import *
+from client.core.network import NetworkClient
+from client.core.game import Game
+from client.scenes.gameplay import GameplayScene
+from client.world.tilemap import TileMap
+from shared.world import TILE_SIZE
 
 pygame.init()
 
-screen = pygame.display.set_mode((800, 600))
+screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
+SCREEN_WIDTH, SCREEN_HEIGHT = screen.get_size()
 clock = pygame.time.Clock()
 
-client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-client.connect(("localhost", 5555))
+network = NetworkClient(SERVER_HOST, SERVER_PORT)
+screen_width, screen_height = screen.get_size()
+tile_image = pygame.image.load(
+    "client/assets/sprites/tiles/hellTile1.png"
+).convert()
 
-running = True
+tile_image = pygame.transform.scale(
+    tile_image,
+    (TILE_SIZE, TILE_SIZE)
+)
 
-while running:
-    dx, dy = 0, 0
+scene = GameplayScene(screen_width, screen_height, tile_image)
+game = Game(screen, network, scene)
 
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
-
-    keys = pygame.key.get_pressed()
-    if keys[pygame.K_w]: dy = -1
-    if keys[pygame.K_s]: dy = 1
-    if keys[pygame.K_a]: dx = -1
-    if keys[pygame.K_d]: dx = 1
-
-    msg = {
-        "action": "move",
-        "dx": dx,
-        "dy": dy
-    }
-
-    client.sendall(json.dumps(msg).encode())
-
-    data = client.recv(4096).decode()
-    state = json.loads(data)
-
-    screen.fill((30, 30, 30))
-
-    for player in state["players"].values():
-        pygame.draw.rect(
-            screen,
-            (200, 50, 50),
-            (player["x"], player["y"], 40, 40)
-        )
-
-    pygame.display.flip()
-    clock.tick(60)
+game.run(clock)
 
 pygame.quit()
-client.close()
