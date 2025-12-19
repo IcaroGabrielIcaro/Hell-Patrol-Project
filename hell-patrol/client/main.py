@@ -23,7 +23,7 @@ tile_image = pygame.transform.scale(
     (TILE_SIZE, TILE_SIZE)
 )
 
-scene = GameplayScene(screen_width, screen_height, tile_image)
+scene = GameplayScene(screen_width, screen_height, tile_image, network.player_id)
 game = Game(screen, network, scene)
 
 game.run(clock)
