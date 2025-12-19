@@ -1,5 +1,5 @@
-from server.config import *
-from server.core.server import GameServer
+from config import *
+from core.server import GameServer
 
 server = GameServer(HOST, PORT)
 server.start()

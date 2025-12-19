@@ -1,7 +1,7 @@
 import socket
 import threading
-from server.rooms.room import Room
-from server.core.client_handler import handle_client
+from rooms.room import Room
+from core.client_handler import handle_client
 
 class GameServer:
     def __init__(self, host, port):
