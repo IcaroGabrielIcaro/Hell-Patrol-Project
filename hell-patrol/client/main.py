@@ -14,16 +14,23 @@ clock = pygame.time.Clock()
 
 network = NetworkClient(SERVER_HOST, SERVER_PORT)
 screen_width, screen_height = screen.get_size()
-tile_image = pygame.image.load(
-    "client/assets/sprites/tiles/hellTile1.png"
-).convert()
 
-tile_image = pygame.transform.scale(
-    tile_image,
-    (TILE_SIZE, TILE_SIZE)
-)
+tile_files = [
+    "hellTile1.png",
+    "hellTile1-2.png",
+    "hellTile1.3.png",
+    "hellTile2.png",
+]
 
-scene = GameplayScene(screen_width, screen_height, tile_image)
+tiles = {}
+
+for i, name in enumerate(tile_files):
+    img = pygame.image.load(
+        f"client/assets/sprites/tiles/{name}"
+    ).convert()
+    tiles[i] = pygame.transform.scale(img, (TILE_SIZE, TILE_SIZE))
+
+scene = GameplayScene(screen_width, screen_height, tiles, network.player_id)
 game = Game(screen, network, scene)
 
 game.run(clock)

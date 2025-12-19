@@ -4,6 +4,11 @@ def handle_client(conn, addr, room):
     player_id = str(addr)
     room.add_player(player_id)
 
+    conn.sendall(json.dumps({
+        "action": "init",
+        "player_id": player_id
+    }).encode())
+
     try:
         while True:
             data = conn.recv(1024).decode()
