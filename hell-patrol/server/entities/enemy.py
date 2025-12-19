@@ -6,7 +6,7 @@ class Enemy:
         self.x = WORLD_WIDTH // 2
         self.y = WORLD_HEIGHT // 2
         self.speed = speed
-        self.move_strategy = move_strategy  # função que retorna dx, dy
+        self.move_strategy = move_strategy
 
     def update(self, players):
         dx, dy = self.move_strategy(self, players)

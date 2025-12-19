@@ -1,11 +1,11 @@
-from entities.player import Player
-from entities.enemy import Enemy
-from entities.utils.move_strategy_a_star import follow_closest_player_a_star
+from server.entities.player import Player
+from server.entities.enemy import Enemy
+from server.entities.utils.move_strategy_a_star import follow_closest_player_smooth
 
 class Room:
     def __init__(self):
         self.players = {}
-        self.enemies = [Enemy(follow_closest_player_a_star) for _ in range(3)]
+        self.enemies = [Enemy(follow_closest_player_smooth) for _ in range(7)]
 
     def add_player(self, player_id):
         self.players[player_id] = Player()
