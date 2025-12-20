@@ -7,20 +7,10 @@ from shared.world import (
 import random
 
 class TileMap:
-    def __init__(self, tiles):
+    def __init__(self, tiles, tile_ids, weights):
         self.tiles = tiles
-
-        # IDs dos tiles
-        self.tile_ids = list(self.tiles.keys())
-
-        # Pesos (porcentagem relativa)
-        # Quanto maior, mais comum
-        self.weights = [
-            50,  # hellTile1 (mais comum)
-            2,  # hellTile2
-            1,  # hellTile1-2
-            47    # hellTile1.3 (raríssimo)
-        ]
+        self.tile_ids = tile_ids
+        self.weights = weights
 
         self.map = [
             [

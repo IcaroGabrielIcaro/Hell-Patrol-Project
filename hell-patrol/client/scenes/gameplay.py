@@ -4,11 +4,11 @@ from client.core.camera import Camera
 from client.world.tilemap import TileMap
 
 class GameplayScene:
-    def __init__(self, screen_width, screen_height, tiles, player_id):
+    def __init__(self, screen_width, screen_height, tiles, tiles_ids, weights, player_id):
         self.players = {}
         self.camera = Camera(screen_width, screen_height)
         self.local_player_id = player_id
-        self.tilemap = TileMap(tiles)
+        self.tilemap = TileMap(tiles, tiles_ids, weights)
 
     def update_state(self, state):
         self.players = {
