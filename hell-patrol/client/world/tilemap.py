@@ -1,34 +1,36 @@
 import pygame
+import random
 from shared.world import (
     TILE_SIZE,
     WORLD_TILES_X,
     WORLD_TILES_Y
 )
-import random
 
 class TileMap:
-    def __init__(self, tiles):
+    def __init__(self, tiles, tile_ids, weights):
         self.tiles = tiles
+        self.tile_ids = tile_ids
+        self.weights = weights
 
-        # IDs dos tiles
-        self.tile_ids = list(self.tiles.keys())
+        self.map = []
+        self.row_offset = []
 
-        # Pesos (porcentagem relativa)
-        # Quanto maior, mais comum
-        self.weights = [
-            50,  # hellTile1 (mais comum)
-            2,  # hellTile2
-            1,  # hellTile1-2
-            47    # hellTile1.3 (raríssimo)
-        ]
+        for y in range(WORLD_TILES_Y):
+            is_offset = random.random() < 0.22
+            self.row_offset.append(is_offset)
 
-        self.map = [
-            [
-                random.choices(self.tile_ids, weights=self.weights, k=1)[0]
-                for _ in range(WORLD_TILES_X)
+            row_size = WORLD_TILES_X + (1 if is_offset else 0)
+
+            row = [
+                random.choices(
+                    population=self.tile_ids,
+                    weights=self.weights,
+                    k=1
+                )[0]
+                for _ in range(row_size)
             ]
-            for _ in range(WORLD_TILES_Y)
-        ]
+
+            self.map.append(row)
 
     def draw(self, screen, camera):
         left   = camera.x
@@ -36,16 +38,24 @@ class TileMap:
         right  = camera.x + camera.screen_width
         bottom = camera.y + camera.screen_height
 
-        start_x = max(0, left // TILE_SIZE)
         start_y = max(0, top // TILE_SIZE)
-        end_x   = min(WORLD_TILES_X - 1, (right  - 1) // TILE_SIZE)
         end_y   = min(WORLD_TILES_Y - 1, (bottom - 1) // TILE_SIZE)
 
         for y in range(start_y, end_y + 1):
-            for x in range(start_x, end_x + 1):
-                tile = self.tiles[self.map[y][x]]
+
+            is_offset = self.row_offset[y]
+            offset_x = -TILE_SIZE // 2 if is_offset else 0
+
+            row = self.map[y]
+
+            for x in range(len(row)):
+                world_x = x * TILE_SIZE + offset_x
+                world_y = y * TILE_SIZE
+
+                screen_x = world_x - camera.x
+                screen_y = world_y - camera.y
+
                 screen.blit(
-                    tile,
-                    (x * TILE_SIZE - camera.x,
-                     y * TILE_SIZE - camera.y)
+                    self.tiles[row[x]],
+                    (screen_x, screen_y)
                 )
