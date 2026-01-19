@@ -1,4 +1,5 @@
 env/
+venv/
 hell-patrol/client/__pycache__/
 hell-patrol/client/core/__pycache__/
 hell-patrol/client/entities/__pycache__/
