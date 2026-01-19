@@ -1,13 +1,11 @@
 import json
+from shared.protocol import make_init, make_state
 
 def handle_client(conn, addr, room):
     player_id = str(addr)
     room.add_player(player_id)
 
-    conn.sendall(json.dumps({
-        "action": "init",
-        "player_id": player_id
-    }).encode())
+    conn.sendall(json.dumps(make_init(player_id)).encode())
 
     try:
         while True:
@@ -18,7 +16,7 @@ def handle_client(conn, addr, room):
             msg = json.loads(data)
             room.handle_action(player_id, msg)
 
-            conn.sendall(json.dumps(room.get_state()).encode())
+            conn.sendall(json.dumps(make_state(room.get_state())).encode())
 
     except Exception as e:
         print(e)
