@@ -8,13 +8,13 @@ class Idle(State):
         super().__init__(objRef,"idle")
     
     def start(self):
-        self.objRef.images[0][0].switchTo("idleB")
-        self.objRef.images[2][0].switchTo("idleH")
+        self.objRef.animationmovimentb.switchTo("idleB")
+        self.objRef.animationmovimenth.switchTo("idleH")
         pass
     
     def update(self,group, dt):
-        self.objRef.images[0][0].current.play(dt)
-        self.objRef.images[2][0].current.play(dt)
+        self.objRef.animationmovimentb.playCurrent(dt)
+        self.objRef.animationmovimenth.playCurrent(dt)
         keys = pygame.key.get_pressed()
         if keys[pygame.K_r] and self.objRef.canSwitch(dt):
             self.objRef.switchWeapon()

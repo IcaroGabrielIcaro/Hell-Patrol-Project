@@ -24,8 +24,9 @@ class Entity(ABC):
         pass
     
     def getImages(self):
+        self.adjustImage()
         return self.images
-    def draw(self,tela,camera=(0,0)):
+    def drawCollider(self,tela,camera=(0,0)):
         pygame.draw.rect(tela, (255,0,0), pygame.Rect(self.collider.x-camera[0],self.collider.y-camera[1],self.width,self.height))
 
     def getRotation(self):

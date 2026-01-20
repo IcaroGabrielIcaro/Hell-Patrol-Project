@@ -47,7 +47,7 @@ while running:
     for key,group in entities.items():
         for entity in group:
             entity.update(dt)
-            entity.draw(screen.screen,screen.camera)
+            entity.drawCollider(screen.screen,screen.camera)
             for image in entity.getImages():
                 screen.drawSprite(*(image))
             group[:] = [e for e in group if not e.dead]

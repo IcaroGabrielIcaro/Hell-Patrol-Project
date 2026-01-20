@@ -10,7 +10,7 @@ class Bullet(Mob):
         super().__init__(x, y, width, height, type, vel,direction,entities)
         self.range=range
         self.states=(StateMachine((OnAir(self),)),)
-
+    
     def move(self, dt):
         pos=(self.x,self.y)
         pos += self.direction * self.vel * dt

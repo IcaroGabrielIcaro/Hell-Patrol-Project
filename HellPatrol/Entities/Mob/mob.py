@@ -16,8 +16,7 @@ class Mob(Entity):
 
         for statemachine in self.states:
             statemachine.currentState.update(statemachine,dt)
-        self.adjustImage()
-        
+                    
     def move(self, dt):
         if self.direction.length()>0:
             self.direction=self.direction.normalize()

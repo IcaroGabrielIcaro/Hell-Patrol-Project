@@ -8,12 +8,12 @@ class Moving(State):
         super().__init__(objRef,"moving")
 
     def start(self):
-        self.objRef.images[0][0].switchTo("walkB")
-        self.objRef.images[2][0].switchTo("walkH")
+        self.objRef.animationmovimentb.switchTo("walkB")
+        self.objRef.animationmovimenth.switchTo("walkH")
         pass
     def update(self,group,dt):
-        self.objRef.images[0][0].current.play(dt)
-        self.objRef.images[2][0].current.play(dt)
+        self.objRef.animationmovimentb.playCurrent(dt)
+        self.objRef.animationmovimenth.playCurrent(dt)
         keys = pygame.key.get_pressed()
         if not(keys[pygame.K_a] or keys[pygame.K_d] or keys[pygame.K_w] or keys[pygame.K_s]):
             group.switchTo("idle")
@@ -30,7 +30,7 @@ class Moving(State):
         if keys[pygame.K_r] and self.objRef.canSwitch(dt):
             self.objRef.switchWeapon()
         self.objRef.move(dt)
-        self.objRef.camera.updateCamera(self.objRef.x,self.objRef.y)
+        self.objRef.screen.updateCamera(self.objRef.x,self.objRef.y)
 
     def quit(self):
         pass

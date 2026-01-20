@@ -8,11 +8,11 @@ class InCombat(State):
         super().__init__(objRef,"incombat")
 
     def start(self):
-        self.objRef.images[1][0].switchTo("incombat")
+        self.objRef.animationcombat.switchTo("incombat")
         self.objRef.attack()        
 
     def update(self,group,dt):
-        self.objRef.images[1][0].current.play(dt)
+        self.objRef.animationcombat.playCurrent(dt)
         self.objRef.adjustAim()
         buttons = pygame.mouse.get_pressed()
         if (not buttons[0] and not self.objRef.isAttacking()) or (not self.objRef.canAttack() and not self.objRef.isAttacking()):
@@ -21,6 +21,6 @@ class InCombat(State):
         elif buttons[0] and self.objRef.canAttack():
             self.objRef.attack()
         for weapon in self.objRef.weapon:
-            weapon.update(dt,self.objRef.camera.camera)  
+            weapon.update(dt,self.objRef.screen.camera)  
     def quit(self):
         pass

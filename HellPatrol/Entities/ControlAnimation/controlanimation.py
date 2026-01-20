@@ -13,5 +13,8 @@ class ControlAnimation:
             self.current = self.animations[name]
             self.current.reset()
     
+    def playCurrent(self,dt):
+        self.current.play(dt)
+    
     def currentImage(self):
         return self.current.currentframe
