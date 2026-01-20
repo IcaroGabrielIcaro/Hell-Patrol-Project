@@ -19,10 +19,10 @@ class Player(Mob):
 
     def __init__(self, x, y,entities,screen):
         super().__init__(x, y, 40, 40, "player", 500,Vector2(0,0),entities)
-        self.weapon=(MachineGun(self),Sniper(self),Shotgun(self))
+        self.arsenal=(MachineGun(self),Sniper(self),Shotgun(self))
         self.actualweapon=0
         self.animationmovimentb=ControlAnimation((Animation("idleB",2,Assets.animations["playerIdleB"]),Animation("walkB",2,Assets.animations["playerWalkB"])))
-        self.animationcombat=ControlAnimation((Animation("notincombat",80,Assets.animations["playerMGNotInCombat"]),Animation("incombat",1/(self.weapon[self.actualweapon].animationtime/2),Assets.animations["playerMGInCombat"])))
+        self.animationcombat=ControlAnimation((Animation("notincombat",80,Assets.animations["playerMGNotInCombat"]),Animation("incombat",1/(self.getActualWeapon().animationtime/2),Assets.animations["playerMGInCombat"])))
         self.animationmovimenth=ControlAnimation((Animation("idleH",2,Assets.animations["playerIdleH"]),Animation("walkH",2,Assets.animations["playerWalkH"])))
         self.images=(
                     (self.animationmovimentb.currentImage(), self.x, self.y, self.getRotation()),
@@ -43,10 +43,10 @@ class Player(Mob):
         super().update(dt)
 
     def attack(self):
-        self.weapon[self.actualweapon].shoot()
+        self.getActualWeapon().shoot()
     
     def adjustImage(self):
-        weaponX,weaponY=self.weapon[self.actualweapon].adjustWeapon()
+        weaponX,weaponY=self.getActualWeapon().adjustWeapon()
         self.images=(
                         (pygame.transform.scale(self.animationmovimentb.currentImage(),(100,100)), self.x, self.y, self.getRotation()),
                         (pygame.transform.scale(self.animationcombat.currentImage(),(100,100)),weaponX,weaponY,self.getRotation()),
@@ -63,8 +63,8 @@ class Player(Mob):
             self.direction=self.direction.normalize()
     
     def switchWeapon(self):
-        self.actualweapon=(self.actualweapon+1)%len(self.weapon)
-        self.animationcombat=ControlAnimation((Animation("notincombat",80,Assets.animations["player"+self.weapon[self.actualweapon].name+"NotInCombat"]),Animation("incombat",1/(self.weapon[self.actualweapon].animationtime/2),Assets.animations["player"+self.weapon[self.actualweapon].name+"InCombat"])))
+        self.actualweapon=(self.actualweapon+1)%len(self.arsenal)
+        self.animationcombat=ControlAnimation((Animation("notincombat",80,Assets.animations["player"+self.getActualWeapon().name+"NotInCombat"]),Animation("incombat",1/(self.getActualWeapon().animationtime/2),Assets.animations["player"+self.getActualWeapon().name+"InCombat"])))
     
     def canSwitch(self,dt):
         if self.switchtime<=0:
@@ -75,10 +75,17 @@ class Player(Mob):
             return False
     
     def canAttack(self):
-        return self.weapon[self.actualweapon].canShoot()
+        return self.getActualWeapon().canShoot()
     
     def getRotation(self):
         return self.direction.angle_to(Vector2(1, 0))+90
     
     def isAttacking(self):
-        return self.weapon[self.actualweapon].isShooting()
+        return self.getActualWeapon().isShooting()
+    
+    def getActualWeapon(self):
+        return self.arsenal[self.actualweapon]
+    
+    def updateArsenal(self,dt):
+        for weapon in self.arsenal:
+            weapon.update(dt,self.screen.camera)

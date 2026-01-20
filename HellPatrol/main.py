@@ -51,7 +51,7 @@ while running:
             for image in entity.getImages():
                 screen.drawSprite(*(image))
             group[:] = [e for e in group if not e.dead]
-    screen.drawAimLine(player.weapon[player.actualweapon].shootdirection,player.weapon[player.actualweapon].bulletposX,player.weapon[player.actualweapon].bulletposY)
+    screen.drawAimLine(player.getActualWeapon().shootdirection,player.getActualWeapon().bulletposX,player.getActualWeapon().bulletposY)
     screen.drawReticle()
     screen.updateScreen()
 

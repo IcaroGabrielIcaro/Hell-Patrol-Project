@@ -14,13 +14,13 @@ class InCombat(State):
     def update(self,group,dt):
         self.objRef.animationcombat.playCurrent(dt)
         self.objRef.adjustAim()
+        self.objRef.updateArsenal(dt)
         buttons = pygame.mouse.get_pressed()
         if (not buttons[0] and not self.objRef.isAttacking()) or (not self.objRef.canAttack() and not self.objRef.isAttacking()):
             group.switchTo("notincombat")
 
         elif buttons[0] and self.objRef.canAttack():
             self.objRef.attack()
-        for weapon in self.objRef.weapon:
-            weapon.update(dt,self.objRef.screen.camera)  
+
     def quit(self):
         pass
