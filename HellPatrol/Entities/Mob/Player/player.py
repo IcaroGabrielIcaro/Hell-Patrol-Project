@@ -77,7 +77,7 @@ class Player(Mob):
     
     def canSwitch(self,dt):
         if self.switchtime<=0:
-            self.switchtime=0.1
+            self.switchtime=0.5
             return True
         else:
             self.switchtime-=dt

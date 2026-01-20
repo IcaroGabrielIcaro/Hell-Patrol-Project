@@ -30,7 +30,7 @@ class Moving(State):
         if keys[pygame.K_r] and self.objRef.canSwitch(dt):
             self.objRef.switchWeapon()
         self.objRef.move(dt)
-        self.objRef.camera.update_camera(self.objRef.x,self.objRef.y)
+        self.objRef.camera.updateCamera(self.objRef.x,self.objRef.y)
 
     def quit(self):
         pass

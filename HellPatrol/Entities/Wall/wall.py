@@ -9,6 +9,5 @@ class Wall(Entity):
 
     def update(self, dt):
         pass
-
     def adjustImage(self):
         pass

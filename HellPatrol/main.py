@@ -43,17 +43,17 @@ while running:
     for evento in pygame.event.get():
         if evento.type == pygame.QUIT:
             runnig = False
-    screen.draw_background(tileMap.tileMap)
+    screen.drawBackground(tileMap.tileMap)
     for key,group in entities.items():
         for entity in group:
             entity.update(dt)
             entity.draw(screen.screen,screen.camera)
             for image in entity.getImages():
-                screen.draw_sprite(*(image))
+                screen.drawSprite(*(image))
             group[:] = [e for e in group if not e.dead]
     screen.drawAimLine(player.weapon[player.actualweapon].shootdirection,player.weapon[player.actualweapon].bulletposX,player.weapon[player.actualweapon].bulletposY)
     screen.drawReticle()
-    screen.update_screen()
+    screen.updateScreen()
 
 pygame.quit()
 

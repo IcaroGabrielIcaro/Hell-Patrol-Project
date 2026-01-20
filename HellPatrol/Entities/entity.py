@@ -11,7 +11,7 @@ class Entity(ABC):
         self.x=x
         self.y=y
         self.direction=Vector2(1,0)
-        self.images=[]
+        self.images=()
         self.type= type
         self.dead=False
 
