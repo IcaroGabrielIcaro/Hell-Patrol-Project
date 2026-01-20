@@ -66,6 +66,117 @@ Tem como função inicializar o display, desenhar imagens na tela e gerenciar a 
 Instancie dando a posição em X e em Y que é onde o player vai spawnar. Exemplo:
 ```screen=Screen(80,80)```
 
+### Classe Entity
+
+#### Local
+HellPatrol->Entities->entity.py
+
+#### Função
+Essa classe é uma classe abstrata, pelo que pesquisei não tem como criar classes abstratas em python, apenas métodos abstratos(Vai saber porque), se você for ver a definição dela vai perceber que você pode instanciar objetos com ela mas NUNCA faça isso, a única função dela é servir como molde para outras classe. Basicamente essa classe vai conter atributos e métodos que serão compartilhadas por todos os objetos que estão no jogo como: Posição, largura, altura, imagem, Caixa de colisão, rotação e tipo.
+
+#### Atributos 
+
+| Atributo | Função   |
+|----------|----------|
+| width   | Largura do objeto|
+| height | Altura do objeto|
+| collider | Caixa de colisão do objeto|
+| x | Posição no eixo X|
+| y | Posição no eixo Y|
+| direction | Vector que representa a rotação do objeto|
+| images | Lista com as imagens que o objeto que vai exibir na tela, a ordem dos objetos nessa lista influência na profundidade|
+| type | Tag/Tipo do objeto|
+| dead | Booleano que indica se o objeto deve ser removido na proxíma atualização|
+
+#### Métodos 
+
+| Método | Função   |
+|----------|----------|
+| update(dt)|Método abstrato. É chamado pelo obeto a cada frame|
+| adjustImage()|Método abstrato. Serve para alterar a imagem do objeto|
+| getImages() | retorna o atributo images|
+| drawCollider(self,tela,camera) | Desenha a caixxa de colisão do objeto|
+| getRotation() | Retorna a rotação em graus do objeto|
+
+#### Uso
+Como já disse antes essa é apenas uma classe abstrata servindo apenas para ser herdada por outras classes. Caso você queira uma classe com objetos estáticos, como uma parede, herde essa classe diretamente, caso você queira uma classe com objetos dinâmicos que mudam de posição e estado constantemente herde a classe ```Mob``` que será abordada a seguir.
+
+### Classe Mob(Entity)
+#### Local
+HellPatrol->Entities->Mob->mob.py
+
+#### Função
+Essa é um classe abstrata que herda a classe Entity, servindo para gerar classes que possuam objetos dinâmicos como balas, inimigos e o próprio jogador.
+> ⚠️ **Aviso:** Para um entendimento completo dessa classe é importante ter conhecimento da classe StateMachine e States.
+
+
+#### Atributos
+
+| Atributo | Função   |
+|----------|----------|
+| vel  |Velocidade do objeto|
+| states | Lista de StateMachine do objeto|
+| entities | Referência para a lista que contém todos os objetos do jogo como: Inimigos, Balas e etc|
+
+#### Métodos
+
+
+| Método | Função   |
+|----------|----------|
+| update(dt) |Chamado a cada atualização de frame, ele faz com que todas statesMachines do objeto rodem o update do estado atual|
+| move(dt) | Move o objeto de acordo com sua velocidade e direção|
+| move2(dt) | Método auxiliar chamado pelo método move|
+
+#### Uso
+
+Como dito anteriormente use para gerar classes que tenham objetos dinâmicos no mundo, ou seja com mudança de estado e movimentação.
+
+#### Player(Mob)
+#### Local
+HellPatrol->Entities->Mob->Player->player.py
+
+#### Função
+
+Herda a classe Mob.Basicamente, serve para criar o objeto que representa o player no jogo
+> ⚠️ **Aviso:** Para um entendimento completo dessa classe é importante ter conhecimento da classe StateMachine,State,Animation,ControlAnimation e Weapon.
+
+> ⚠️ **Aviso:** Vá para HellPatrol->Entities->Mob->Player->PlayerStates e veja lá os possíveis estados dessa classe.
+
+#### Atributos
+
+
+| Atributo | Função   |
+|----------|----------|
+| arsenal  |Lista com as possíveis armas do jogador|
+| actualWeapon | Índice da arma atual do jogador|
+| aimdirection | Vector que representa a direção para onde o jogado está mirando|
+| animationmovimentb | Animação referente a corpo do jogador|
+| animationcombat | Animação referente a arma do jogador|
+| animationmovimenth | Animação referente a cabeça do jogador|
+| screen | Referência para um objeto da classe Screen|
+| switchweapontime | Animação referente a cabeça do jogador|
+
+#### Métodos
+
+| Método | Função   |
+|----------|----------|
+| update(dt) |Chamado a cada atualização de frame, ele faz com que todas statesMachines do objeto rodem o update do estado atual|
+| move(dt) | Move o objeto de acordo com sua velocidade e direção|
+| move2(dt) | Método auxiliar chamado pelo método move|
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
