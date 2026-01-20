@@ -19,7 +19,7 @@ class Shotgun(Weapon):
         self.user.entities["playerbullets"].append(PlayerSquaredBullet(self.bulletposX,self.bulletposY,self.shootdirection.rotate(20.0),self.user.entities))
 
     def adjustWeapon(self):
-        tempv=self.user.direction*20
+        tempv=self.user.aimdirection*20
         adjustInX=tempv.x
         adjustInY=tempv.y
         return (self.user.x+adjustInX,self.user.y+adjustInY)

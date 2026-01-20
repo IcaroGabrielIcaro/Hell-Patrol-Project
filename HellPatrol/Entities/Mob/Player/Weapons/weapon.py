@@ -23,8 +23,8 @@ class Weapon(ABC):
         self.adjustShootDirection(camera)
 
     def adjustToWeapon(self,a,b):
-        tempv=self.user.direction.rotate(-90)*b
-        tempv2=self.user.direction*a
+        tempv=self.user.aimdirection.rotate(-90)*b
+        tempv2=self.user.aimdirection*a
         tempv3=tempv+tempv2
         adjustInX=tempv3.x
         adjustInY=tempv3.y

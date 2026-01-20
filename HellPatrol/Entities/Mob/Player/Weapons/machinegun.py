@@ -16,7 +16,7 @@ class MachineGun(Weapon):
         self.user.entities["playerbullets"].append(PlayerShortBullet(self.bulletposX,self.bulletposY,self.shootdirection.rotate(random.uniform(-self.precision,self.precision)),self.user.entities))
              
     def adjustWeapon(self):
-        tempv=self.user.direction*20
+        tempv=self.user.aimdirection*20
         adjustInX=tempv.x
         adjustInY=tempv.y
         return (self.user.x+adjustInX,self.user.y+adjustInY)

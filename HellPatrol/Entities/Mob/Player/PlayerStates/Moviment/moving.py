@@ -15,20 +15,18 @@ class Moving(State):
         self.objRef.animationmovimentb.playCurrent(dt)
         self.objRef.animationmovimenth.playCurrent(dt)
         keys = pygame.key.get_pressed()
+        if keys[pygame.K_r] and self.objRef.canSwitch():
+            self.objRef.switchWeapon()
         if not(keys[pygame.K_a] or keys[pygame.K_d] or keys[pygame.K_w] or keys[pygame.K_s]):
             group.switchTo("idle")
-        self.objRef.direction= Vector2(0,0)
-        teclas = pygame.key.get_pressed()
-        if teclas[pygame.K_a]:
+        if keys[pygame.K_a]:
             self.objRef.direction.x -= 1
-        if teclas[pygame.K_d]:
+        if keys[pygame.K_d]:
             self.objRef.direction.x += 1
-        if teclas[pygame.K_w]:
+        if keys[pygame.K_w]:
             self.objRef.direction.y -= 1
-        if teclas[pygame.K_s]:
+        if keys[pygame.K_s]:
             self.objRef.direction.y +=1
-        if keys[pygame.K_r] and self.objRef.canSwitch(dt):
-            self.objRef.switchWeapon()
         self.objRef.move(dt)
         self.objRef.screen.updateCamera(self.objRef.x,self.objRef.y)
 

@@ -32,7 +32,7 @@ entities["player"].append(player)
 #entities["walls"].append(wall)
 entities["walls"].append(wall2)
 #entities["walls"].append(wall3)
-entities["enemies"].append(enemy)
+#entities["enemies"].append(enemy)
 
 
 running=True
