@@ -18,7 +18,7 @@ Essa classe tem como função principal principal carregar todas as imagens e an
 
 #### Métodos
 
-| Atributo | Função   |
+| Método | Função   |
 |----------|----------|
 | loadImages   | carrega todas as imagens|
 | loadAnimations  | carrega todas as imagens|
@@ -26,7 +26,7 @@ Essa classe tem como função principal principal carregar todas as imagens e an
 #### Uso
 
 ##### Inicializando
-Antes de carregar o jogo use ```loadImages()``` e ```loadAnimations()```.
+A classe possui todos os métodos e atributos com estáticos, ou seja não tente instancia-la. Antes de carregar o jogo use ```loadImages()``` e ```loadAnimations()```.
 
 #### Adicionando nova imagem
 Caso queira carregar uma nova imagem no jogo, adicione a imagem na pasta Assets->Images e procure a pasta apropriada, em seguida vá ao método ```loadImages()``` e coloque```Assets["um nome legal para sua imagem"]= pygame.image.load("caminho_da_imagem + nome_da_imagem").convert_alpha()```.
@@ -37,6 +37,39 @@ Caso queira acessar a imagem em qualquer lugar do código lembre-se de importar 
 ### Classe Screen
 #### Local
 HellPatrol->screen.py
+
+#### Função
+Tem como função inicializar o display, desenhar imagens na tela e gerenciar a câmera
+
+#### Atributos
+| Atributo | Função   |
+|----------|----------|
+| screen   | Display|
+| screenWidth | largura da tela|
+| screenHeight | altura da tela|
+| camera | tupla que contém a posição da camera|
+
+#### Métodos
+| Método | Função   |
+|----------|----------|
+| updateCamera(newPosX,newPosY)|Atualiza a posição da camera|
+| updateScreen(newPosX,newPosY)|Atualiza a tela apagando todos os elementos e preparando-a para o próximo frame|
+| drawBackground(tileMap) | Desenha o tileMap|
+| drawSprite(sprite,posX,posY,rotation) | Desenha uma imagem no local e com a rotação indicada|
+| drawAimLine(direction,playerx,playery) | Desenha a linha de mira que sai da arma do player|
+| drawReticle() | Desenha a mira do player|
+
+#### Uso
+
+#### Inicializando
+
+Instancie dando a posição em X e em Y que é onde o player vai spawnar. Exemplo:
+```screen=Screen(80,80)```
+
+
+
+
+
 
 
 
