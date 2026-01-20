@@ -160,9 +160,123 @@ Herda a classe Mob.Basicamente, serve para criar o objeto que representa o playe
 
 | Método | Função   |
 |----------|----------|
-| update(dt) |Chamado a cada atualização de frame, ele faz com que todas statesMachines do objeto rodem o update do estado atual|
-| move(dt) | Move o objeto de acordo com sua velocidade e direção|
-| move2(dt) | Método auxiliar chamado pelo método move|
+| attack() |Dispara com a arma atual|
+| adjustImages() | Ajusta as imagens da lista de imagens de acordo com a animação atual|
+| adjustAim() | Retorna a direção onde o jogador está mirando|
+| switchWeapon() | Troca a arma do jogador|
+| updateSwitchWeaponTime(dt) | Atualiza o tempo de espera para trocar a arma|
+| canSwitch() | Retorna um booleano que indica se pode trocar a arma|
+| canAttack(self) | Retorna um booleano que indica se pode atirar |
+| isAttacking(self) | Retorna um booleano que indica se o jogador está atirando|
+| getActualWeapon(self) | Retorna a arma atual que o jogador está usando|
+| updateArsenal(self,dt) | Chama a função update nas armas do jogador|
+
+### Classe StateMachine
+
+#### Local
+HellPatrol->Entities->Mob->StateMachine->stateMachine.py
+
+#### Função
+Armazena um conjunto de estados exclusivos entre si. Exemplo: Parado/Andando, EmCombate/NãoEstáEmCombate 
+
+> ⚠️ **Aviso:** Confira a classe State.
+
+#### Atributos
+
+| Atributo | Função   |
+|----------|----------|
+| states | Dicionário que tem como valores estados e como chave os seus respectivos nomes|
+| currentState |Estado Atual|
+
+#### Métodos
+
+| Método | Função   |
+|----------|----------|
+| switchTo(name) | troca o ```currentState``` para o estado que possui essa chave em ```states```|
+
+### State
+
+#### Local
+HellPatrol->Entities->Mob->StateMachine->States->state.py
+
+#### Função
+Classe abstrata que serve para gerar estados de objetos.
+
+> ⚠️ **Aviso:** Confira a classe StateMachine.
+
+#### Atributos
+
+| Atributo | Função   |
+|----------|----------|
+| stateName| Nome do estado|
+| objRef | Referência do objeto que possui esse estado|
+
+#### Métodos
+
+| Método | Função   |
+|----------|----------|
+| entry | Ação que o estado realiza assim que é colocado como o atual na stateMachine|
+| update | Ação que o estado realiza todo o frame|
+| quit | Ação que o estado realiza assim que sai como o atual na stateMachine|
+
+### ControlAnimation
+
+#### Local
+HellPatrol->Entities->ControlAnimation->controlanimation.py
+
+#### Função
+Classe que serve para armazenar animations exclusivos entre si.
+
+> ⚠️ **Aviso:** Confira a classe Animation.
+
+#### Atributos
+
+| Atributo | Função   |
+|----------|----------|
+| animations | Dicionário que tem como valores animações e como chave os seus respectivos nomes|
+| current |animação Atual|
+
+#### Métodos
+
+| Método | Função   |
+|----------|----------|
+| switchTo(name) | troca o ```current``` para a animação que possui essa chave em ```animations```|
+| playCurrent(dt) | toca a animação de ```current```|
+| currentImage() | retorna a imagem atual da animação em ```current```|
+
+### Animation
+
+#### Local
+HellPatrol->Entities->ControlAnimation->Animation->animation.py
+
+#### Função
+Guarda um conjunto de imagens que compõe uma animação
+
+#### Atributos
+
+#### Atributos
+
+| Atributo | Função   |
+|----------|----------|
+| animation | Conjunto de imagens da animação|
+| name |nome da animação|
+| speed |velocidade da animação|
+| currentframe |frame atual da animação|
+| framesINdex |número do frame da animação Atual|
+| wait |tempo para mudar de um frame para outro|
+
+#### Métodos
+
+| Método | Função   |
+|----------|----------|
+| play(dt) | toca a animação|
+| reset | reseta o ```waittime```|
+
+
+
+
+
+
 
 
 
