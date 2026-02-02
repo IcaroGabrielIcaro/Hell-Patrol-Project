@@ -1,6 +1,7 @@
 import pygame
 from client.entities.player import Player
 from client.entities.enemy import Enemy
+from client.entities.projectile import Projectile
 from client.core.camera import Camera
 from client.world.tilemap import TileMap
 
@@ -9,6 +10,7 @@ class GameplayScene:
     def __init__(self, screen_width, screen_height, tiles, tiles_ids, weights, player_id):
         self.players = {}
         self.enemies = {}
+        self.projectiles = []
         self.camera = Camera(screen_width, screen_height)
         self.local_player_id = player_id
         self.tilemap = TileMap(tiles, tiles_ids, weights)
@@ -52,6 +54,11 @@ class GameplayScene:
             for i, e in enumerate(state.get("enemies", []))
         }
 
+        self.projectiles = [
+            Projectile(p["x"], p["y"], p["angle"])
+            for p in state.get("projectiles", [])
+        ]
+
     # -------------------------------------------------
     # Atualiza animações (lado cliente)
     # -------------------------------------------------
@@ -83,3 +90,6 @@ class GameplayScene:
         # 🧍 Jogadores
         for player in self.players.values():
             player.draw(screen, self.camera)
+
+        for proj in self.projectiles:
+            proj.draw(screen, self.camera)

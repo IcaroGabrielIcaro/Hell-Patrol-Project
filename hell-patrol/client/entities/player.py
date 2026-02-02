@@ -1,12 +1,10 @@
 import pygame
 import os
+from pygame.math import Vector2
+
 
 class Player:
     def __init__(self, x, y, scale=1.0, anim_speed=0.15):
-        """
-        scale = tamanho do sprite (1.0 = original)
-        anim_speed = velocidade da animação (segundos por frame)
-        """
         self.x = x
         self.y = y
         self.scale = scale
@@ -21,16 +19,24 @@ class Player:
         self.frame_index = 0
         self.anim_timer = 0
 
-        # Usa o tamanho do sprite como hitbox
+        # hitbox baseada no corpo
         w, h = self.frames_body[0].get_size()
         self.rect = pygame.Rect(self.x, self.y, w, h)
+
+        # 🔫 carrega arma UMA VEZ
+        gun_path = "client/assets/sprites/arma/shotgun-1.png"
+        self.gun_img = pygame.image.load(gun_path).convert_alpha()
+        self.gun_img = pygame.transform.scale_by(self.gun_img, self.scale)
+
+        # offsets locais (antes da rotação)
+        self.gun_offset = Vector2(18 * self.scale, -4 * self.scale)
+        self.head_offset = Vector2(0, -6 * self.scale)
 
     # -------------------------------------------------
     # Carrega sprites
     # -------------------------------------------------
     def load_sprites(self):
         base_path = "client/assets/sprites/player/centralizado"
-
         head_path = os.path.join(base_path, "cabeca")
         body_path = os.path.join(base_path, "corpo")
 
@@ -58,7 +64,7 @@ class Player:
                 self.anim_timer = 0
                 self.frame_index = (self.frame_index + 1) % len(self.frames_body)
         else:
-            self.frame_index = 0  # frame parado
+            self.frame_index = 0
 
         self.rect.topleft = (self.x, self.y)
 
@@ -66,19 +72,26 @@ class Player:
     # Desenho
     # -------------------------------------------------
     def draw(self, screen, camera):
-        # Centro do player na tela
-        screen_center = camera.apply(self.rect).center
+        screen_center = Vector2(camera.apply(self.rect).center)
 
-        body_img = self.frames_body[self.frame_index]
-        head_img = self.frames_head[self.frame_index]
+        body = self.frames_body[self.frame_index]
+        head = self.frames_head[self.frame_index]
 
-        # Rotaciona imagens
-        rotated_body = pygame.transform.rotate(body_img, self.angle + 90)
-        rotated_head = pygame.transform.rotate(head_img, self.angle + 90)
+        # 🔄 rota tudo pelo mesmo ângulo
+        angle = self.angle + 90
 
-        # Mantém rotação em torno do centro
+        rotated_body = pygame.transform.rotate(body, angle)
+        rotated_head = pygame.transform.rotate(head, angle)
+        rotated_gun = pygame.transform.rotate(self.gun_img, angle)
+
+        # offsets rotacionados
+        gun_pos = screen_center + self.gun_offset.rotate(-self.angle)
+
         body_rect = rotated_body.get_rect(center=screen_center)
         head_rect = rotated_head.get_rect(center=screen_center)
+        gun_rect = rotated_gun.get_rect(center=gun_pos)
 
-        screen.blit(rotated_body, body_rect.topleft)
-        screen.blit(rotated_head, head_rect.topleft)
+        # ordem correta
+        screen.blit(rotated_body, body_rect)
+        screen.blit(rotated_head, head_rect)
+        screen.blit(rotated_gun, gun_rect)
