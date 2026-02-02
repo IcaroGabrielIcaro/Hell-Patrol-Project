@@ -2,7 +2,7 @@ import pygame
 import os
 
 class Projectile:
-    def __init__(self, x, y, angle, scale=1.3):
+    def __init__(self, x, y, angle, scale=3.5):
         base = "client/assets/sprites/tiros/quadrado"
 
         if os.path.exists(base):
@@ -15,7 +15,6 @@ class Projectile:
                 for f in files
             ]
         else:
-            # fallback caso sprites não existam
             surf = pygame.Surface((10, 10), pygame.SRCALPHA)
             pygame.draw.circle(surf, (255, 255, 0), (5, 5), 5)
             self.frames = [surf]
@@ -26,6 +25,6 @@ class Projectile:
         self.angle = angle
 
     def draw(self, screen, camera):
-        img = pygame.transform.rotate(self.frames[self.frame], self.angle)
-        rect = img.get_rect(center=camera.apply_pos((self.x, self.y)))
+        img = pygame.transform.rotate(self.frames[self.frame], self.angle + 90)
+        rect = img.get_rect(center=camera.apply_pos((self.x, self.y + 60)))
         screen.blit(img, rect)

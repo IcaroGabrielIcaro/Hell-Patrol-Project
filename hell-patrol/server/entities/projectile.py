@@ -1,8 +1,8 @@
 import math
 from shared.world import WORLD_WIDTH, WORLD_HEIGHT
 
-SPEED = 1400
-MAX_DISTANCE = 900  # distância máxima antes do projétil desaparecer
+SPEED = 2500
+MAX_DISTANCE = 1200  # distância máxima antes do projétil desaparecer
 
 class Projectile:
     def __init__(self, x, y, angle):
