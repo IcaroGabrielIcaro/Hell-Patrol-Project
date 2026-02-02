@@ -4,10 +4,11 @@ from shared.protocol import make_move
 import math
 
 class Game:
-    def __init__(self, screen, network, scene):
+    def __init__(self, screen, network, scene, crosshair_img):
         self.screen = screen
         self.network = network
         self.scene = scene
+        self.crosshair_img = crosshair_img
 
     def run(self, clock):
         running = True
@@ -49,6 +50,13 @@ class Game:
 
             self.screen.fill((30, 30, 30))
             self.scene.draw(self.screen)
+
+            # 🎯 DESENHA A MIRA
+            mx, my = pygame.mouse.get_pos()
+            rect = self.crosshair_img.get_rect(center=(mx, my))
+            self.screen.blit(self.crosshair_img, rect)
+
+
             pygame.display.flip()
 
         self.network.close()
