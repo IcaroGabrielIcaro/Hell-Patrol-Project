@@ -3,7 +3,6 @@ from client.config import *
 from client.core.network import NetworkClient
 from client.core.game import Game
 from client.scenes.gameplay import GameplayScene
-from client.world.tilemap import TileMap
 from shared.world import TILE_SIZE
 
 pygame.init()

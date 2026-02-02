@@ -8,6 +8,7 @@ class Player:
         self.size = PLAYER_SIZE
         self.x = (WORLD_WIDTH // 2) - (PLAYER_SIZE // 2)
         self.y = (WORLD_HEIGHT // 2) - (PLAYER_SIZE // 2)
+        self.angle = 0
 
     def move(self, dx, dy, dt):
         """
@@ -30,9 +31,13 @@ class Player:
         self.x = max(0, min(self.x, WORLD_WIDTH - self.size))
         self.y = max(0, min(self.y, WORLD_HEIGHT - self.size))
 
+    def set_angle(self, angle):
+        self.angle = angle
+
     def to_dict(self):
         return {
             "x": int(self.x),
             "y": int(self.y),
-            "size": self.size
+            "size": self.size,
+            "angle": self.angle
         }

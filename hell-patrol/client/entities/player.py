@@ -1,9 +1,84 @@
 import pygame
+import os
 
 class Player:
-    def __init__(self, x, y, size):
-        self.rect = pygame.Rect(x, y, size, size)
+    def __init__(self, x, y, scale=1.0, anim_speed=0.15):
+        """
+        scale = tamanho do sprite (1.0 = original)
+        anim_speed = velocidade da animação (segundos por frame)
+        """
+        self.x = x
+        self.y = y
+        self.scale = scale
+        self.anim_speed = anim_speed
+        self.angle = 0
 
+        self.frames_head = []
+        self.frames_body = []
+
+        self.load_sprites()
+
+        self.frame_index = 0
+        self.anim_timer = 0
+
+        # Usa o tamanho do sprite como hitbox
+        w, h = self.frames_body[0].get_size()
+        self.rect = pygame.Rect(self.x, self.y, w, h)
+
+    # -------------------------------------------------
+    # Carrega sprites
+    # -------------------------------------------------
+    def load_sprites(self):
+        base_path = "client/assets/sprites/player/centralizado"
+
+        head_path = os.path.join(base_path, "cabeca")
+        body_path = os.path.join(base_path, "corpo")
+
+        head_files = sorted(os.listdir(head_path))
+        body_files = sorted(os.listdir(body_path))
+
+        for h_file, b_file in zip(head_files, body_files):
+            head_img = pygame.image.load(os.path.join(head_path, h_file)).convert_alpha()
+            body_img = pygame.image.load(os.path.join(body_path, b_file)).convert_alpha()
+
+            if self.scale != 1.0:
+                head_img = pygame.transform.scale_by(head_img, self.scale)
+                body_img = pygame.transform.scale_by(body_img, self.scale)
+
+            self.frames_head.append(head_img)
+            self.frames_body.append(body_img)
+
+    # -------------------------------------------------
+    # Atualiza animação
+    # -------------------------------------------------
+    def update(self, dt, moving):
+        if moving:
+            self.anim_timer += dt
+            if self.anim_timer >= self.anim_speed:
+                self.anim_timer = 0
+                self.frame_index = (self.frame_index + 1) % len(self.frames_body)
+        else:
+            self.frame_index = 0  # frame parado
+
+        self.rect.topleft = (self.x, self.y)
+
+    # -------------------------------------------------
+    # Desenho
+    # -------------------------------------------------
     def draw(self, screen, camera):
-        screen_rect = camera.apply(self.rect)
-        pygame.draw.rect(screen, (200, 50, 50), screen_rect)
+        # Centro do player na tela
+        screen_center = camera.apply(self.rect).center
+
+        body_img = self.frames_body[self.frame_index]
+        head_img = self.frames_head[self.frame_index]
+
+        # Rotaciona imagens
+        rotated_body = pygame.transform.rotate(body_img, self.angle + 90)
+        rotated_head = pygame.transform.rotate(head_img, self.angle + 90)
+
+        # Mantém rotação em torno do centro
+        body_rect = rotated_body.get_rect(center=screen_center)
+        head_rect = rotated_head.get_rect(center=screen_center)
+
+        screen.blit(rotated_body, body_rect.topleft)
+        screen.blit(rotated_head, head_rect.topleft)

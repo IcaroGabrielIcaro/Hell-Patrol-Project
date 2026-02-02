@@ -17,7 +17,7 @@ class Room:
 
     def add_player(self, player_id):
         self.players[player_id] = Player()
-        self.inputs[player_id] = {"dx": 0, "dy": 0}
+        self.inputs[player_id] = {"dx": 0, "dy": 0, "angle": 0}
 
     def remove_player(self, player_id):
         del self.players[player_id]
@@ -27,11 +27,13 @@ class Room:
         if msg["action"] == "move":
             self.inputs[player_id]["dx"] = msg["dx"]
             self.inputs[player_id]["dy"] = msg["dy"]
+            self.inputs[player_id]["angle"] = msg.get("angle", 0)
 
     def update(self, dt):
         for pid, player in self.players.items():
             inp = self.inputs[pid]
             player.move(inp["dx"], inp["dy"], dt)
+            player.set_angle(inp["angle"])
 
         player_list = list(self.players.values())
         for enemy in self.enemies:
