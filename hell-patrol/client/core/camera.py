@@ -25,3 +25,6 @@ class Camera:
 
     def apply(self, rect):
         return rect.move(-self.x, -self.y)
+
+    def apply_pos(self, pos):
+        return (pos[0] - self.x, pos[1] - self.y)

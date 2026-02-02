@@ -5,6 +5,7 @@ class NetworkClient:
     def __init__(self, host, port):
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.socket.connect((host, port))
+        self.buffer = ""
 
         self.player_id = None  # 🔥 guarda o id do player local
 
@@ -15,11 +16,17 @@ class NetworkClient:
             print(f"[NETWORK] Player ID recebido: {self.player_id}")
 
     def send(self, data):
-        self.socket.sendall(json.dumps(data).encode())
+        self.socket.sendall((json.dumps(data) + "\n").encode())
 
     def receive(self):
-        data = self.socket.recv(4096).decode()
-        return json.loads(data)
+        while "\n" not in self.buffer:
+            data = self.socket.recv(4096).decode()
+            if not data:
+                raise ConnectionError("Conex\u00e3o fechada")
+            self.buffer += data
+
+        line, self.buffer = self.buffer.split("\n", 1)
+        return json.loads(line)
 
     def close(self):
         self.socket.close()

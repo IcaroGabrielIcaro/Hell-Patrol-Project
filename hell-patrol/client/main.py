@@ -6,8 +6,12 @@ from client.core.display import Display
 from client.assets.loader import TileLoader
 from client.scenes.gameplay import GameplayScene
 
+# inicializa pygame
+pygame.init()
+
 # inicia a tela
 screen, screen_width, screen_height = Display.init_fullscreen()
+pygame.mouse.set_visible(False)
 clock = pygame.time.Clock()
 
 # conecta com o servidor
@@ -24,3 +28,4 @@ game = Game(screen, network, scene)
 game.run(clock)
 
 pygame.quit()
+

@@ -5,18 +5,23 @@ def handle_client(conn, addr, room):
     player_id = str(addr)
     room.add_player(player_id)
 
-    conn.sendall(json.dumps(make_init(player_id)).encode())
+    conn.sendall((json.dumps(make_init(player_id)) + "\n").encode())
 
     try:
+        buffer = ""
         while True:
             data = conn.recv(1024).decode()
             if not data:
                 break
 
-            msg = json.loads(data)
-            room.handle_action(player_id, msg)
+            buffer += data
+            while "\n" in buffer:
+                line, buffer = buffer.split("\n", 1)
+                if line:
+                    msg = json.loads(line)
+                    room.handle_action(player_id, msg)
 
-            conn.sendall(json.dumps(make_state(room.get_state())).encode())
+            conn.sendall((json.dumps(make_state(room.get_state())) + "\n").encode())
 
     except Exception as e:
         print(e)
