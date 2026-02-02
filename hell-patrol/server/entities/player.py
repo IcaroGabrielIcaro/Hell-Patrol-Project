@@ -1,9 +1,9 @@
 from shared.world import WORLD_WIDTH, WORLD_HEIGHT, PLAYER_SIZE
 import math
 
-SPEED = 1000  # pixels por segundo
+SPEED = 1000
 MAX_AMMO = 10
-FIRE_COOLDOWN = 0.28
+FIRE_COOLDOWN = 0.28  # agora funciona corretamente
 
 class Player:
     def __init__(self):
@@ -13,21 +13,18 @@ class Player:
         self.angle = 0
 
         self.ammo = MAX_AMMO
-        self.cooldown = 0
+        self.cooldown = 0.0
         self.just_reloaded = False
 
     def move(self, dx, dy, dt):
-        # normaliza vetor direção
         length = math.hypot(dx, dy)
         if length > 0:
             dx /= length
             dy /= length
 
-        # Aplica velocidade
         self.x += dx * SPEED * dt
         self.y += dy * SPEED * dt
 
-        # limita ao mundo
         self.x = max(0, min(self.x, WORLD_WIDTH - self.size))
         self.y = max(0, min(self.y, WORLD_HEIGHT - self.size))
 
@@ -42,8 +39,12 @@ class Player:
         return self.ammo > 0 and self.cooldown <= 0
 
     def shoot(self):
+        if not self.can_shoot():
+            return False
+
         self.ammo -= 1
         self.cooldown = FIRE_COOLDOWN
+        return True
 
     def reload(self):
         self.ammo = MAX_AMMO

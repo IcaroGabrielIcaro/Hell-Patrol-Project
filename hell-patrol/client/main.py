@@ -2,30 +2,48 @@ import pygame
 from client.config import *
 from client.core.network import NetworkClient
 from client.core.game import Game
-from client.core.display import Display
-from client.assets.loader import TileLoader
 from client.scenes.gameplay import GameplayScene
+from shared.world import TILE_SIZE
 
-# inicializa pygame
 pygame.init()
 
-# inicia a tela
-screen, screen_width, screen_height = Display.init_fullscreen()
+screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
 pygame.mouse.set_visible(False)
+
+SCREEN_WIDTH, SCREEN_HEIGHT = screen.get_size()
 clock = pygame.time.Clock()
 
-# conecta com o servidor
 network = NetworkClient(SERVER_HOST, SERVER_PORT)
+screen_width, screen_height = screen.get_size()
 
-# carrega os assets
-tiles, tile_ids, weights = TileLoader.load_tiles()
+TILE_DEFINITION = {
+    "hellTile1.png":   38,
+    "hellTile1-2.png": 1,
+    "hellTile1-3.png": 1,
 
-# inicia o jogo
+    "hellTile2.png":   35,
+    "hellTile2-1.png": 2,
+
+    "hellTile3.png":   22,
+    "hellTile3-1.png": 1,
+}
+
+tiles = {}
+tile_ids = []
+weights = []
+
+for idx, (filename, weight) in enumerate(TILE_DEFINITION.items()):
+    img = pygame.image.load(
+        f"client/assets/sprites/tiles/{filename}"
+    ).convert()
+
+    tiles[idx] = pygame.transform.scale(img, (TILE_SIZE, TILE_SIZE))
+    tile_ids.append(idx)
+    weights.append(weight)
+
 scene = GameplayScene(screen_width, screen_height, tiles, tile_ids, weights, network.player_id)
 game = Game(screen, network, scene)
 
-# loop principal
 game.run(clock)
 
 pygame.quit()
-
