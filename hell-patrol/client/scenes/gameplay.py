@@ -66,36 +66,10 @@ class GameplayScene:
         self.projectiles = []
 
         for p in state.get("projectiles", []):
-            angle = p["angle"]
-            rad = math.radians(angle)
-
-            # 🔵 vetor frontal (direção do tiro)
-            front_x = math.cos(rad)
-            front_y = -math.sin(rad)
-
-            # 🟢 vetor lateral (perpendicular)
-            side_x = math.sin(rad)
-            side_y = math.cos(rad)
-
-            # 🔧 AJUSTES FINOS (dinâmicos)
-            front_offset = 0   # distância até a ponta do cano
-            side_offset  = 0   # deslocamento da arma em relação ao centro
-
-            spawn_x = (
-                p["x"]
-                + front_x * front_offset
-                + side_x  * side_offset
-            )
-
-            spawn_y = (
-                p["y"]
-                + front_y * front_offset
-                + side_y  * side_offset
-            )
-
-            self.projectiles.append(
-                Projectile(spawn_x, spawn_y, angle)
-            )
+            self.projectiles = [
+                Projectile(p["x"], p["y"], p["angle"])
+                for p in state.get("projectiles", [])
+            ]
 
     def update_animations(self, dt, moving):
         player = self.players.get(self.local_player_id)

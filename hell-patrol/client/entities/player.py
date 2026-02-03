@@ -76,7 +76,7 @@ class Player:
         screen_center = Vector2(camera.apply(self.rect).center)
 
         # se não tiver sprites, desenha retângulo simples
-        if not self.frames_body or not self.frames_head:
+        if not (not self.frames_body or not self.frames_head):
             screen_rect = camera.apply(self.rect)
             pygame.draw.rect(screen, (200, 50, 50), screen_rect)
             return

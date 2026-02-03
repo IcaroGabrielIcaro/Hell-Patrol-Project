@@ -12,6 +12,13 @@ class Player:
         self.y = (WORLD_HEIGHT // 2) - (PLAYER_SIZE // 2)
         self.angle = 0
 
+        # self.center_offset_x = 50
+        # self.center_offset_y = 7
+
+        # 🎯 OFFSET DO CENTRO NO ESPAÇO DO PLAYER
+        self.center_forward = 0     # pra frente (direção que olha)
+        self.center_side = 0        # lateral (direita do player)
+
         self.ammo = MAX_AMMO
         self.cooldown = 0.0
         self.just_reloaded = False
