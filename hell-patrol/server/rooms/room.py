@@ -2,6 +2,7 @@ from server.entities.player import Player
 from server.entities.enemy import Enemy
 from server.entities.projectile import Projectile
 from shared.world import WORLD_WIDTH, WORLD_HEIGHT
+import math
 import random
 
 class Room:
@@ -37,14 +38,43 @@ class Room:
             if msg.get("shoot") and player.can_shoot():
                 player.shoot()
 
-                px = player.x + player.size // 2
-                py = player.y + player.size // 2
+                # centro base do sprite
+                base_cx = player.x + player.size / 2
+                base_cy = player.y + player.size / 2
 
-                px += 50
-                py += -100
+                # 🔑 use UM único ângulo
+                angle = msg["angle"]
+                rad = math.radians(angle)
+
+                # vetores locais
+                front_x = math.cos(rad)
+                front_y = -math.sin(rad)
+
+                side_x = math.sin(rad)
+                side_y = math.cos(rad)
+
+                # 🎯 centro lógico do player (rotacionado)
+                cx = (
+                    base_cx
+                    + front_x * player.center_forward
+                    + side_x  * player.center_side
+                )
+
+                cy = (
+                    base_cy
+                    + front_y * player.center_forward
+                    + side_y  * player.center_side
+                )
+
+                # 🔫 ponta da arma
+                RAIO_ARMA = 0
+                AJUSTE_LATERAL = 0
+
+                spawn_x = cx + front_x * RAIO_ARMA + side_x * AJUSTE_LATERAL
+                spawn_y = cy + front_y * RAIO_ARMA + side_y * AJUSTE_LATERAL
 
                 self.projectiles.append(
-                    Projectile(px, py, msg["angle"])
+                    Projectile(spawn_x, spawn_y, angle)
                 )
 
             # processa recarga se vier junto
