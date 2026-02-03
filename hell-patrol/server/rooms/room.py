@@ -3,7 +3,6 @@ from server.entities.enemy import Enemy
 from server.entities.projectile import Projectile
 from shared.world import WORLD_WIDTH, WORLD_HEIGHT
 import random
-import math
 
 class Room:
     def __init__(self):
@@ -38,23 +37,11 @@ class Room:
             if msg.get("shoot") and player.can_shoot():
                 player.shoot()
 
-                # Calcula a posição da ponta da arma
-                angle_rad = math.radians(-msg["angle"])
-                gun_length = 25 * 2.7  # gun_length * scale do player
-                gun_offset_x = 18 * 2.7  # offset da arma em X * scale
-                gun_offset_y = -4 * 2.7  # offset da arma em Y * scale
+                px = player.x + player.size // 2
+                py = player.y + player.size // 2
 
-                # Centro do player
-                center_x = player.x + player.size // 2
-                center_y = player.y + player.size // 2
-
-                # Aplica offset da arma com rotação
-                gun_base_x = center_x + gun_offset_x * math.cos(angle_rad) - gun_offset_y * math.sin(angle_rad)
-                gun_base_y = center_y + gun_offset_x * math.sin(angle_rad) + gun_offset_y * math.cos(angle_rad)
-
-                # Adiciona o comprimento da arma na direção que ela aponta
-                px = gun_base_x + math.cos(angle_rad) * gun_length
-                py = gun_base_y + math.sin(angle_rad) * gun_length
+                px += 50
+                py += -100
 
                 self.projectiles.append(
                     Projectile(px, py, msg["angle"])
@@ -68,23 +55,8 @@ class Room:
             if player.can_shoot():
                 player.shoot()
 
-                # Calcula a posição da ponta da arma
-                angle_rad = math.radians(-msg["angle"])
-                gun_length = 25 * 2.7  # gun_length * scale do player
-                gun_offset_x = 18 * 2.7  # offset da arma em X * scale
-                gun_offset_y = -4 * 2.7  # offset da arma em Y * scale
-
-                # Centro do player
-                center_x = player.x + player.size // 2
-                center_y = player.y + player.size // 2
-
-                # Aplica offset da arma com rotação
-                gun_base_x = center_x + gun_offset_x * math.cos(angle_rad) - gun_offset_y * math.sin(angle_rad)
-                gun_base_y = center_y + gun_offset_x * math.sin(angle_rad) + gun_offset_y * math.cos(angle_rad)
-
-                # Adiciona o comprimento da arma na direção que ela aponta
-                px = gun_base_x + math.cos(angle_rad) * gun_length
-                py = gun_base_y + math.sin(angle_rad) * gun_length
+                px = player.x + player.size // 2
+                py = player.y + player.size // 2
 
                 self.projectiles.append(
                     Projectile(px, py, msg["angle"])
