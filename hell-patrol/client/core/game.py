@@ -60,7 +60,7 @@ class Game:
 
             state = self.network.receive()
             self.scene.update_state(state)
-
+            self.scene.update_animations(dt) 
             self.screen.fill((30, 30, 30))
             self.scene.draw(self.screen)
 
