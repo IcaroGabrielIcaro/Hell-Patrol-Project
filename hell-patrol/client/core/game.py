@@ -42,6 +42,7 @@ class Game:
         keys = pygame.key.get_pressed()
 
         msg = make_move(dx, dy, angle)
+        msg["player_id"] = self.network.player_id  # identifica player no servidor
 
         if mouse_buttons[0]:
             msg["shoot"] = True
@@ -49,9 +50,9 @@ class Game:
         if keys[pygame.K_r]:
             msg["reload"] = True
 
-        self.network.send(msg)
+        self.network.send(msg)  # envia via UDP
 
-        state = self.network.receive()
+        state = self.network.receive()  # recebe via UDP
         self.scene.update_state(state)
 
         self.screen.fill((30, 30, 30))
