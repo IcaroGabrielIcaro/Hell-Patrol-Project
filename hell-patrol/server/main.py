@@ -18,11 +18,12 @@ if __name__ == "__main__":
     # Cria e inicia servidor principal (código original)
     server = GameServer(HOST, PORT)
 
-    # Adiciona serviço de descoberta
-    discovery = RoomDiscovery(local_ip, PORT)
+    # Adiciona serviço de descoberta (passa referência da room para verificar jogadores)
+    discovery = RoomDiscovery(local_ip, PORT, server.room)
     discovery.start()
 
     print(f"[MAIN] Servidor rodando em {local_ip}:{PORT}")
+    print(f"[MAIN] Sala só aparecerá no lobby com 2+ jogadores")
     print(f"[MAIN] Pressione Ctrl+C para parar")
 
     try:

@@ -12,13 +12,15 @@ class RoomDiscovery:
     """
     Serviço de descoberta de salas via UDP broadcast.
     Roda em paralelo ao GameServer principal.
+    Só anuncia quando há jogadores conectados.
     """
 
     DISCOVERY_PORT = 12345
 
-    def __init__(self, server_host, server_port):
+    def __init__(self, server_host, server_port, room):
         self.server_host = server_host
         self.server_port = server_port
+        self.room = room  # Referência à Room para verificar jogadores
         self.running = False
         self.broadcast_socket = None
 
@@ -32,21 +34,26 @@ class RoomDiscovery:
         print(f"[DISCOVERY] Anunciando sala em broadcast (porta {self.DISCOVERY_PORT})")
 
     def _broadcast_loop(self):
-        """Loop de broadcast periódico."""
+        """Loop de broadcast periódico - só anuncia se houver jogadores."""
         while self.running:
             try:
-                message = {
-                    'type': 'room_announcement',
-                    'host': self.server_host,
-                    'port': self.server_port
-                }
-                data = json.dumps(message).encode('utf-8')
-                self.broadcast_socket.sendto(data, ('<broadcast>', self.DISCOVERY_PORT))
+                # Só anuncia se houver pelo menos 2 jogadores (para criar uma "sala multiplayer")
+                player_count = len(self.room.players)
+                
+                if player_count >= 2:
+                    message = {
+                        'type': 'room_announcement',
+                        'host': self.server_host,
+                        'port': self.server_port,
+                        'players': player_count
+                    }
+                    data = json.dumps(message).encode('utf-8')
+                    self.broadcast_socket.sendto(data, ('<broadcast>', self.DISCOVERY_PORT))
             except Exception as e:
                 if self.running:
                     print(f"[DISCOVERY] Erro ao enviar broadcast: {e}")
 
-            time.sleep(2.0)  # Anuncia a cada 2 segundos
+            time.sleep(2.0)  # Verifica a cada 2 segundos
 
     def stop(self):
         """Para o serviço de descoberta."""

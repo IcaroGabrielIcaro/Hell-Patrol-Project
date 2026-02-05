@@ -87,6 +87,7 @@ class LobbyScene:
                     self.rooms[room_key] = {
                         'host': addr[0],
                         'port': message['port'],
+                        'players': message.get('players', 0),
                         'last_seen': time.time()
                     }
                     # Atualiza lista ordenada
@@ -111,7 +112,7 @@ class LobbyScene:
     def _update_room_list(self):
         """Atualiza lista ordenada de salas para navegação."""
         self.room_list = [
-            f"Sala de {room['host']}:{room['port']}"
+            f"Sala de {room['host']}:{room['port']} ({room.get('players', '?')} jogadores)"
             for room in self.rooms.values()
         ]
         # Mantém índice válido
