@@ -37,10 +37,10 @@ class RoomDiscovery:
         """Loop de broadcast periódico - só anuncia se houver jogadores."""
         while self.running:
             try:
-                # Só anuncia se houver pelo menos 2 jogadores (para criar uma "sala multiplayer")
+                # Só anuncia se houver pelo menos 1 jogador conectado
                 player_count = len(self.room.players)
-                
-                if player_count >= 2:
+
+                if player_count >= 1:
                     message = {
                         'type': 'room_announcement',
                         'host': self.server_host,
