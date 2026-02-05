@@ -1,7 +1,3 @@
-"""
-Servidor de descoberta de salas via UDP broadcast.
-Complementa o GameServer original sem modificá-lo.
-"""
 import socket
 import threading
 import json

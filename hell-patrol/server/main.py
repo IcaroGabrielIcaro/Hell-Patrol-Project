@@ -1,7 +1,3 @@
-"""
-Servidor para Hell Patrol.
-Mantém compatibilidade com código original + adiciona discovery de salas.
-"""
 from server.config import *
 from server.core.server import GameServer
 from server.core.discovery import RoomDiscovery, get_local_ip
@@ -23,7 +19,7 @@ if __name__ == "__main__":
     discovery.start()
 
     print(f"[MAIN] Servidor rodando em {local_ip}:{PORT}")
-    print(f"[MAIN] Sala só aparecerá no lobby com 2+ jogadores")
+    print(f"[MAIN] Sala aparecerá no lobby quando houver jogadores")
     print(f"[MAIN] Pressione Ctrl+C para parar")
 
     try:

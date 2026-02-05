@@ -24,7 +24,7 @@ def handle_client(conn, addr, room):
             conn.sendall((json.dumps(make_state(room.get_state())) + "\n").encode())
 
     except Exception as e:
-        print(e)
+        print(f"[CLIENT_HANDLER] Erro com {player_id}: {e}")
 
     room.remove_player(player_id)
     conn.close()

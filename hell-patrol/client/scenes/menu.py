@@ -1,7 +1,3 @@
-"""
-Tela de menu principal com navegação por setas (cima/baixo) e Enter para selecionar.
-Opções: Jogar sozinho, Entrar em sala (multiplayer), Sair.
-"""
 import pygame
 
 

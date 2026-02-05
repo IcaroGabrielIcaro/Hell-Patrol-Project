@@ -1,7 +1,3 @@
-"""
-Tela de lobby para listar e selecionar salas abertas.
-Escaneia salas via broadcast UDP e exibe lista navegável.
-"""
 import pygame
 import threading
 import socket
@@ -14,7 +10,6 @@ class LobbyScene:
     Cena de lobby para descoberta e seleção de salas multiplayer.
     Escaneia rede local via UDP broadcast para encontrar salas abertas.
     """
-
     DISCOVERY_PORT = 12345  # Porta para discovery de salas
 
     def __init__(self, screen_width, screen_height):

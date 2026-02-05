@@ -1,6 +1,3 @@
-"""
-Aplicação principal que gerencia o fluxo entre menu, lobby e gameplay.
-"""
 import pygame
 from client.config import FPS, SERVER_HOST, SERVER_PORT
 from client.core.network import NetworkClient
