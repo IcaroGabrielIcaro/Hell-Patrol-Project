@@ -3,6 +3,7 @@ import math
 from client.core.input import get_movement
 from shared.protocol import make_move
 
+
 class Game:
     def __init__(self, screen, network, scene):
         self.screen = screen
@@ -38,11 +39,11 @@ class Game:
         else:
             angle = 0
 
-        mouse_buttons = pygame.mouse.get_pressed()
-        keys = pygame.key.get_pressed()
+            # ---------------- Input ----------------
+            dx, dy = get_movement()
+            mx, my = pygame.mouse.get_pos()
 
-        msg = make_move(dx, dy, angle)
-        msg["player_id"] = self.network.player_id  # identifica player no servidor
+            player = self.scene.players.get(self.network.player_id)
 
         if mouse_buttons[0]:
             msg["shoot"] = True
@@ -50,7 +51,9 @@ class Game:
         if keys[pygame.K_r]:
             msg["reload"] = True
 
-        self.network.send(msg)  # envia via UDP
+            # ---------------- Network send ----------------
+            msg = make_move(dx, dy, angle)
+            msg["player_id"] = self.network.player_id
 
         state = self.network.receive()  # recebe via UDP
         self.scene.update_state(state)
@@ -60,17 +63,23 @@ class Game:
 
         mx, my = pygame.mouse.get_pos()
 
-        # Protege contra estado sem player_id (pode acontecer em multiplayer)
-        if self.network.player_id in state.get("players", {}):
-            ammo = state["players"][self.network.player_id]["ammo"]
-        else:
-            ammo = 0
+            # ---------------- Network receive ----------------
+            state = self.network.receive()
+            self.scene.update_state(state)
+            self.scene.update_animations(dt)
 
-        img = self.crosshair_empty if ammo == 0 else self.crosshair_img
-        rect = img.get_rect(center=(mx, my))
-        self.screen.blit(img, rect)
+            # ---------------- Render ----------------
+            self.screen.fill((30, 30, 30))
+            self.scene.draw(self.screen)
 
-        pygame.display.flip()
+            # ---------------- Crosshair ----------------
+            mx, my = pygame.mouse.get_pos()
+
+            players_state = state.get("players", {})
+            if self.network.player_id in players_state:
+                ammo = players_state[self.network.player_id].get("ammo", 0)
+            else:
+                ammo = 0
 
         return True  # Continua rodando
 

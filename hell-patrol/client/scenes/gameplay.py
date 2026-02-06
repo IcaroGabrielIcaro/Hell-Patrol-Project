@@ -1,7 +1,7 @@
 import pygame
-import math
 from client.entities.player import Player
 from client.entities.enemy import Enemy
+from client.entities.spawn import Spawn
 from client.entities.projectile import Projectile
 from client.core.camera import Camera
 from client.world.tilemap import TileMap
@@ -9,37 +9,36 @@ from client.world.tilemap import TileMap
 
 class GameplayScene:
     def __init__(self, screen_width, screen_height, tiles, tiles_ids, weights, player_id):
-        self.players = {}
-        self.enemies = {}
+        self.players = {}        # player_id -> Player
+        self.enemies = {}        # enemy_id -> Enemy
+        self.spawns = {}         # spawn_id -> Spawn
         self.projectiles = []
+
         self.camera = Camera(screen_width, screen_height)
         self.local_player_id = player_id
         self.tilemap = TileMap(tiles, tiles_ids, weights)
 
-        # 🔧 ajuste fino da distância da ponta da arma
-        self.projectile_offset = 45  # TESTE: 35 / 40 / 45 / 50
-
+    # =========================================================
+    # Snapshot vindo do servidor
+    # =========================================================
     def update_state(self, state):
-        server_players = state["players"]
+        server_players = state.get("players", {})
+        server_enemies = state.get("enemies", [])
+        server_spawns = state.get("spawns", [])
+        server_projectiles = state.get("projectiles", [])
 
-        # -------------------------------
-        # Atualiza ou cria players
-        # -------------------------------
+        # ---------------- Players ----------------
         for pid, p in server_players.items():
             if pid not in self.players:
-                if pid == self.local_player_id:
-                    self.players[pid] = Player(
-                        p["x"], p["y"],
-                        size=p.get("size"),
-                        scale=2.7,
-                        anim_speed=0.12
-                    )
-                else:
-                    self.players[pid] = Player(
-                        p["x"], p["y"],
-                        size=p.get("size"),
-                        scale=2.7
-                    )
+                player = Player(
+                    p["x"],
+                    p["y"],
+                    size=p.get("size"),
+                    scale=2.7,
+                    anim_speed=0.12
+                )
+                player.alive = p.get("alive", True)
+                self.players[pid] = player
             else:
                 player = self.players[pid]
                 player.x = p["x"]
@@ -47,56 +46,118 @@ class GameplayScene:
                 player.angle = p.get("angle", 0)
                 player.rect.topleft = (player.x, player.y)
 
+                if "alive" in p:
+                    player.alive = p["alive"]
+
         # remove players desconectados
         for pid in list(self.players.keys()):
             if pid not in server_players:
                 del self.players[pid]
 
-        # -------------------------------
-        # Atualiza inimigos
-        # -------------------------------
-        self.enemies = {
-            i: Enemy(e["x"], e["y"], e["size"])
-            for i, e in enumerate(state.get("enemies", []))
-        }
+        # ---------------- Spawns ----------------
+        alive_spawn_ids = set()
 
-        # -------------------------------
-        # Atualiza projéteis (CORRIGIDO DE VERDADE)
-        # -------------------------------
-        self.projectiles = []
+        for s in server_spawns:
+            sid = s["id"]
+            alive_spawn_ids.add(sid)
 
-        for p in state.get("projectiles", []):
-            self.projectiles = [
+            if sid not in self.spawns:
+                self.spawns[sid] = Spawn(
+                    spawn_id=sid,
+                    x=s["x"],
+                    y=s["y"]
+                )
+
+        for sid in list(self.spawns.keys()):
+            if sid not in alive_spawn_ids:
+                del self.spawns[sid]
+
+        # ---------------- Enemies ----------------
+        alive_enemy_ids = set()
+
+        for e in server_enemies:
+            eid = e["id"]
+            alive_enemy_ids.add(eid)
+
+            if eid not in self.enemies:
+                self.enemies[eid] = Enemy(
+                    enemy_id=eid,
+                    x=e["x"],
+                    y=e["y"],
+                    size=e["size"]
+                )
+            else:
+                self.enemies[eid].update_position(e["x"], e["y"])
+
+        for eid in list(self.enemies.keys()):
+            if eid not in alive_enemy_ids:
+                del self.enemies[eid]
+
+        # ---------------- Projectiles ----------------
+        self.projectiles.clear()
+        for p in server_projectiles:
+            self.projectiles.append(
                 Projectile(p["x"], p["y"], p["angle"])
-                for p in state.get("projectiles", [])
-            ]
+            )
 
-    def update_animations(self, dt, moving):
-        player = self.players.get(self.local_player_id)
-        if player:
-            player.update(dt, moving)
+    # =========================================================
+    # Atualização visual (animações)
+    # =========================================================
+    def update_animations(self, dt):
+        for spawn in self.spawns.values():
+            spawn.update(dt)
 
+        for enemy in self.enemies.values():
+            enemy.update(dt)
+
+        for player in self.players.values():
+            player.update(dt, moving=True)
+
+    # =========================================================
+    # Seleção do alvo da câmera
+    # =========================================================
+    def get_camera_target(self):
+        local = self.players.get(self.local_player_id)
+        if local and getattr(local, "alive", True):
+            return local
+
+        alive_players = [
+            p for p in self.players.values()
+            if getattr(p, "alive", True)
+        ]
+
+        if not alive_players:
+            return None
+
+        if local:
+            alive_players.sort(
+                key=lambda p: (p.x - local.x) ** 2 + (p.y - local.y) ** 2
+            )
+            return alive_players[0]
+
+        return alive_players[0]
+
+    # =========================================================
+    # Render
+    # =========================================================
     def draw(self, screen):
         if not self.players:
             return
 
-        main_player = self.players.get(self.local_player_id)
-        if not main_player:
-            return
+        target = self.get_camera_target()
+        if target:
+            self.camera.update(target.rect)
 
-        self.camera.update(main_player.rect)
-
-        # mapa
         self.tilemap.draw(screen, self.camera)
 
-        # inimigos
+        for spawn in self.spawns.values():
+            spawn.draw(screen, self.camera)
+
         for enemy in self.enemies.values():
             enemy.draw(screen, self.camera)
 
-        # jogadores
         for player in self.players.values():
             player.draw(screen, self.camera)
 
-        # projéteis
         for proj in self.projectiles:
             proj.draw(screen, self.camera)

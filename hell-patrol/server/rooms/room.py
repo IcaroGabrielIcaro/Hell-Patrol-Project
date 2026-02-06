@@ -1,9 +1,13 @@
 from server.entities.player import Player
 from server.entities.enemy import Enemy
+from server.entities.spawn import Spawn
+from server.entities.check_collision import enemy_player_collision, projectile_enemy_collision
 from server.entities.projectile import Projectile
 from shared.world import WORLD_WIDTH, WORLD_HEIGHT
 import math
 import random
+
+SPAWN_INTERVAL = 3.0
 
 class Room:
     def __init__(self):
@@ -11,12 +15,8 @@ class Room:
         self.inputs = {}
         self.projectiles = []
         self.enemies = []
-        self.spawn_enemy()
-
-    def spawn_enemy(self):
-        x = random.randint(100, WORLD_WIDTH - 100)
-        y = random.randint(100, WORLD_HEIGHT - 100)
-        self.enemies.append(Enemy(x, y))
+        self.spawns = []
+        self.spawn_timer = 0.0
 
     def add_player(self, player_id):
         self.players[player_id] = Player()
@@ -77,47 +77,103 @@ class Room:
             player.reload()
 
     def update(self, dt):
+        # --------------------
         # atualiza jogadores
+        # --------------------
         for pid, player in self.players.items():
+            if not player.alive:
+                continue
+
             inp = self.inputs[pid]
             player.move(inp["dx"], inp["dy"], dt)
             player.set_angle(inp["angle"])
             player.update_timers(dt)
 
+        # --------------------
+        # spawns
+        # --------------------
+        if self.players:  
+            self.spawn_timer += dt
+            if self.spawn_timer >= SPAWN_INTERVAL:
+                self.spawn_timer -= SPAWN_INTERVAL
+                self.spawns.append(Spawn())
+
+        new_enemies = []
+        alive_spawns = []
+
+        for spawn in self.spawns:
+            spawn.update(dt)
+            if spawn.done:
+                new_enemies.append(Enemy(spawn.x, spawn.y))
+            else:
+                alive_spawns.append(spawn)
+
+        self.spawns = alive_spawns
+        self.enemies.extend(new_enemies)
+        
+        # --------------------
         # atualiza inimigos
+        # --------------------
         player_list = list(self.players.values())
+        alive_enemies = []
+
         for enemy in self.enemies:
             enemy.update(player_list, dt)
 
-        # atualiza projéteis e remove os que saíram do mundo
-        alive = []
-        for p in self.projectiles:
-            p.update(dt)
-            if p.is_alive():
-                alive.append(p)
-        self.projectiles = alive
+            killed = False
+
+            # colisão enemy x player
+            for player in player_list:
+                if not player.alive:
+                    continue
+
+                if enemy_player_collision(enemy, player):
+                    player.alive = False
+                    killed = False  # inimigo continua vivo
+                    break
+
+            if not killed:
+                alive_enemies.append(enemy)
+
+        self.enemies = alive_enemies
+
+        # --------------------
+        # atualiza projéteis
+        # --------------------
+        alive_projectiles = []
+        alive_enemies = self.enemies
+
+        for proj in self.projectiles:
+            proj.update(dt)
+            if not proj.is_alive():
+                continue
+
+            hit = False
+
+            for enemy in alive_enemies:
+                if projectile_enemy_collision(proj, enemy):
+                    hit = True
+                    alive_enemies.remove(enemy)
+                    break
+
+            if not hit:
+                alive_projectiles.append(proj)
+
+        self.projectiles = alive_projectiles
+        self.enemies = alive_enemies
+
 
     def get_state(self):
         reloaded_players = []
 
-        # verifica quais jogadores acabaram de recarregar
         for pid, player in self.players.items():
             if player.consume_reload_flag():
                 reloaded_players.append(pid)
 
         return {
-            "players": {
-                pid: p.to_dict()
-                for pid, p in self.players.items()
-            },
-            "enemies": [
-                e.to_dict()
-                for e in self.enemies
-            ],
-            "projectiles": [
-                p.to_dict()
-                for p in self.projectiles
-            ],
+            "players": {pid: p.to_dict() for pid, p in self.players.items()},
+            "enemies": [e.to_dict() for e in self.enemies],
+            "spawns": [s.to_dict() for s in self.spawns],
+            "projectiles": [p.to_dict() for p in self.projectiles],
             "reloaded_players": reloaded_players
         }
-

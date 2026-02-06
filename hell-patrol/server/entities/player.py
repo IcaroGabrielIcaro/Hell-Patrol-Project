@@ -3,7 +3,8 @@ import math
 
 SPEED = 1000
 MAX_AMMO = 10
-FIRE_COOLDOWN = 0.28  # agora funciona corretamente
+FIRE_COOLDOWN = 0.28
+
 
 class Player:
     def __init__(self):
@@ -12,18 +13,23 @@ class Player:
         self.y = (WORLD_HEIGHT // 2) - (PLAYER_SIZE // 2)
         self.angle = 0
 
-        # self.center_offset_x = 50
-        # self.center_offset_y = 7
+        # estado vital
+        self.alive = True
 
-        # 🎯 OFFSET DO CENTRO NO ESPAÇO DO PLAYER
-        self.center_forward = 0     # pra frente (direção que olha)
-        self.center_side = 0        # lateral (direita do player)
+        # 🎯 offset do centro no espaço local do player
+        # (usado para spawn de projéteis / muzzle / etc)
+        self.center_forward = 0   # frente (direção que olha)
+        self.center_side = 0      # lateral (direita do player)
 
+        # combate
         self.ammo = MAX_AMMO
         self.cooldown = 0.0
         self.just_reloaded = False
 
     def move(self, dx, dy, dt):
+        if not self.alive:
+            return
+
         length = math.hypot(dx, dy)
         if length > 0:
             dx /= length
@@ -36,14 +42,15 @@ class Player:
         self.y = max(0, min(self.y, WORLD_HEIGHT - self.size))
 
     def set_angle(self, angle):
-        self.angle = angle
+        if self.alive:
+            self.angle = angle
 
     def update_timers(self, dt):
         if self.cooldown > 0:
             self.cooldown -= dt
 
     def can_shoot(self):
-        return self.ammo > 0 and self.cooldown <= 0
+        return self.alive and self.ammo > 0 and self.cooldown <= 0
 
     def shoot(self):
         if not self.can_shoot():
@@ -69,5 +76,6 @@ class Player:
             "y": int(self.y),
             "size": self.size,
             "angle": self.angle,
-            "ammo": self.ammo
+            "ammo": self.ammo,
+            "alive": self.alive
         }
