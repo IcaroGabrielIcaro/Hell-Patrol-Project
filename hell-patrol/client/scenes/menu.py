@@ -31,6 +31,9 @@ class MenuScene:
 
         self.choice = None  # Armazena a escolha do usuário
 
+        self.logo = pygame.image.load("client/assets/logo/logo.png").convert_alpha()
+        self.logo = pygame.transform.scale(self.logo, (900, 450))
+
     def handle_input(self, event):
         """
         Processa input do usuário (teclado).
@@ -54,12 +57,11 @@ class MenuScene:
         screen.fill(self.bg_color)
 
         # Título
-        title_text = self.title_font.render("HELL PATROL", True, self.title_color)
-        title_rect = title_text.get_rect(center=(self.screen_width // 2, 150))
-        screen.blit(title_text, title_rect)
+        logo_rect = self.logo.get_rect(center=(self.screen_width // 2, 450))
+        screen.blit(self.logo, logo_rect)
 
         # Opções
-        y_start = 300
+        y_start = 750
         y_spacing = 80
 
         for i, option in enumerate(self.options):
