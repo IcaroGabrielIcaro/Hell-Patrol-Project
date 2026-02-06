@@ -21,15 +21,23 @@ class Game:
         ).convert_alpha()
         self.crosshair_empty = pygame.transform.scale_by(self.crosshair_empty, 2.3)
 
-    def run(self, clock):
-        running = True
+    def update_and_draw(self, dt):
+        """
+        Atualiza e desenha um frame do jogo.
+        Retorna True para continuar, False para sair.
+        """
+        dx, dy = get_movement()
 
-        while running:
-            dt = clock.tick(60) / 1000
+        mx, my = pygame.mouse.get_pos()
+        player = self.scene.players.get(self.network.player_id)
 
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    running = False
+        if player:
+            screen_pos = self.scene.camera.apply(player.rect).center
+            diff_x = mx - screen_pos[0]
+            diff_y = my - screen_pos[1]
+            angle = math.degrees(math.atan2(-diff_y, diff_x))
+        else:
+            angle = 0
 
             # ---------------- Input ----------------
             dx, dy = get_movement()
@@ -37,28 +45,23 @@ class Game:
 
             player = self.scene.players.get(self.network.player_id)
 
-            if player:
-                screen_pos = self.scene.camera.apply(player.rect).center
-                diff_x = mx - screen_pos[0]
-                diff_y = my - screen_pos[1]
-                angle = math.degrees(math.atan2(-diff_y, diff_x))
-            else:
-                angle = 0
+        if mouse_buttons[0]:
+            msg["shoot"] = True
 
-            mouse_buttons = pygame.mouse.get_pressed()
-            keys = pygame.key.get_pressed()
+        if keys[pygame.K_r]:
+            msg["reload"] = True
 
             # ---------------- Network send ----------------
             msg = make_move(dx, dy, angle)
             msg["player_id"] = self.network.player_id
 
-            if mouse_buttons[0]:
-                msg["shoot"] = True
+        state = self.network.receive()  # recebe via UDP
+        self.scene.update_state(state)
 
-            if keys[pygame.K_r]:
-                msg["reload"] = True
+        self.screen.fill((30, 30, 30))
+        self.scene.draw(self.screen)
 
-            self.network.send(msg)
+        mx, my = pygame.mouse.get_pos()
 
             # ---------------- Network receive ----------------
             state = self.network.receive()
@@ -78,10 +81,21 @@ class Game:
             else:
                 ammo = 0
 
-            img = self.crosshair_empty if ammo == 0 else self.crosshair_img
-            rect = img.get_rect(center=(mx, my))
-            self.screen.blit(img, rect)
+        return True  # Continua rodando
 
-            pygame.display.flip()
+    def run(self, clock):
+        """Loop de jogo original (para compatibilidade)."""
+        running = True
+
+        while running:
+            dt = clock.tick(60) / 1000
+
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    running = False
+
+            if not self.update_and_draw(dt):
+                running = False
 
         self.network.close()
+

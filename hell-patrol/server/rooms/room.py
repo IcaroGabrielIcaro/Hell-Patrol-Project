@@ -4,6 +4,7 @@ from server.entities.spawn import Spawn
 from server.entities.check_collision import enemy_player_collision, projectile_enemy_collision
 from server.entities.projectile import Projectile
 from shared.world import WORLD_WIDTH, WORLD_HEIGHT
+import math
 import random
 
 SPAWN_INTERVAL = 3.0
@@ -25,6 +26,31 @@ class Room:
         del self.players[player_id]
         del self.inputs[player_id]
 
+    def _create_projectile(self, player, angle):
+        """Cria um projétil na posição da arma do jogador."""
+        # Centro base do sprite
+        base_cx = player.x + player.size / 2
+        base_cy = player.y + player.size / 2
+
+        # Vetores direcionais
+        rad = math.radians(angle)
+        front_x = math.cos(rad)
+        front_y = -math.sin(rad)
+        side_x = math.sin(rad)
+        side_y = math.cos(rad)
+
+        # Centro lógico do player (rotacionado)
+        cx = base_cx + front_x * player.center_forward + side_x * player.center_side
+        cy = base_cy + front_y * player.center_forward + side_y * player.center_side
+
+        # Ponta da arma (ajuste conforme necessário)
+        RAIO_ARMA = 0
+        AJUSTE_LATERAL = 0
+        spawn_x = cx + front_x * RAIO_ARMA + side_x * AJUSTE_LATERAL
+        spawn_y = cy + front_y * RAIO_ARMA + side_y * AJUSTE_LATERAL
+
+        return Projectile(spawn_x, spawn_y, angle)
+
     def handle_action(self, player_id, msg):
         player = self.players[player_id]
 
@@ -33,30 +59,19 @@ class Room:
             self.inputs[player_id]["dy"] = msg["dy"]
             player.set_angle(msg.get("angle", 0))
 
-            # processa tiro se vier junto
+            # Processa tiro se vier junto
             if msg.get("shoot") and player.can_shoot():
                 player.shoot()
-                px = player.x + player.size // 2
-                py = player.y + player.size // 2
-                self.projectiles.append(
-                    Projectile(px, py, msg["angle"])
-                )
+                self.projectiles.append(self._create_projectile(player, msg["angle"]))
 
-            # processa recarga se vier junto
+            # Processa recarga se vier junto
             if msg.get("reload"):
                 player.reload()
 
         elif msg["action"] == "shoot":
             if player.can_shoot():
                 player.shoot()
-
-                # cria projétil no centro do jogador
-                px = player.x + player.size // 2
-                py = player.y + player.size // 2
-
-                self.projectiles.append(
-                    Projectile(px, py, msg["angle"])
-                )
+                self.projectiles.append(self._create_projectile(player, msg["angle"]))
 
         elif msg["action"] == "reload":
             player.reload()
