@@ -24,7 +24,21 @@ class Projectile:
         self.y = y
         self.angle = angle
 
-    def draw(self, screen, camera):
+        self.rect = None  # hitbox atual
+
+    def draw(self, screen, camera, debug_hitbox=False):
         img = pygame.transform.rotate(self.frames[self.frame], self.angle + 90)
-        rect = img.get_rect(center=camera.apply_pos((self.x, self.y + 60)))
-        screen.blit(img, rect)
+
+        self.rect = img.get_rect(
+            center=camera.apply_pos((self.x, self.y + 60))
+        )
+
+        screen.blit(img, self.rect)
+
+        if debug_hitbox:
+            pygame.draw.rect(
+                screen,
+                (255, 0, 0),   
+                self.rect,
+                2             
+            )

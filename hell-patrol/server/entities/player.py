@@ -13,11 +13,8 @@ class Player:
         self.y = (WORLD_HEIGHT // 2) - (PLAYER_SIZE // 2)
         self.angle = 0
 
-        # estado vital
         self.alive = True
 
-        # 🎯 offset do centro no espaço local do player
-        # (usado para spawn de projéteis / muzzle / etc)
         self.center_forward = 0   # frente (direção que olha)
         self.center_side = 0      # lateral (direita do player)
 
@@ -50,7 +47,7 @@ class Player:
             self.cooldown -= dt
 
     def can_shoot(self):
-        return self.alive and self.ammo > 0 and self.cooldown <= 0
+        return self.alive and (self.ammo > 0 and self.cooldown <= 0)
 
     def shoot(self):
         if not self.can_shoot():

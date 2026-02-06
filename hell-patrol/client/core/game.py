@@ -22,13 +22,13 @@ class Game:
         self.crosshair_empty = pygame.transform.scale_by(self.crosshair_empty, 2.3)
 
     def update_and_draw(self, dt):
-        """
-        Atualiza e desenha um frame do jogo.
-        Retorna True para continuar, False para sair.
-        """
+        # ---------------- Input ----------------
         dx, dy = get_movement()
-
         mx, my = pygame.mouse.get_pos()
+
+        mouse_buttons = pygame.mouse.get_pressed()
+        keys = pygame.key.get_pressed()
+
         player = self.scene.players.get(self.network.player_id)
 
         if player:
@@ -39,52 +39,48 @@ class Game:
         else:
             angle = 0
 
-            # ---------------- Input ----------------
-            dx, dy = get_movement()
-            mx, my = pygame.mouse.get_pos()
-
-            player = self.scene.players.get(self.network.player_id)
+        # ---------------- Network send ----------------
+        msg = make_move(dx, dy, angle)
+        msg["player_id"] = self.network.player_id
 
         if mouse_buttons[0]:
             msg["shoot"] = True
 
         if keys[pygame.K_r]:
-            msg["reload"] = True
+            if self.scene.game_over:
+                msg["restart"] = True
+            else:
+                msg["reload"] = True
 
-            # ---------------- Network send ----------------
-            msg = make_move(dx, dy, angle)
-            msg["player_id"] = self.network.player_id
+        self.network.send(msg)
 
-        state = self.network.receive()  # recebe via UDP
+        # ---------------- Network receive ----------------
+        state = self.network.receive()
+        if not state:
+            return True
+
         self.scene.update_state(state)
+        self.scene.update_animations(dt)
 
+        # ---------------- Render ----------------
         self.screen.fill((30, 30, 30))
         self.scene.draw(self.screen)
 
-        mx, my = pygame.mouse.get_pos()
+        # ---------------- Crosshair ----------------
+        players_state = state.get("players", {})
+        if self.network.player_id in players_state:
+            ammo = players_state[self.network.player_id].get("ammo", 0)
+        else:
+            ammo = 0
 
-            # ---------------- Network receive ----------------
-            state = self.network.receive()
-            self.scene.update_state(state)
-            self.scene.update_animations(dt)
+        img = self.crosshair_empty if ammo == 0 else self.crosshair_img
+        rect = img.get_rect(center=(mx, my))
+        self.screen.blit(img, rect)
 
-            # ---------------- Render ----------------
-            self.screen.fill((30, 30, 30))
-            self.scene.draw(self.screen)
-
-            # ---------------- Crosshair ----------------
-            mx, my = pygame.mouse.get_pos()
-
-            players_state = state.get("players", {})
-            if self.network.player_id in players_state:
-                ammo = players_state[self.network.player_id].get("ammo", 0)
-            else:
-                ammo = 0
-
-        return True  # Continua rodando
+        pygame.display.flip()
+        return True
 
     def run(self, clock):
-        """Loop de jogo original (para compatibilidade)."""
         running = True
 
         while running:
@@ -98,4 +94,3 @@ class Game:
                 running = False
 
         self.network.close()
-

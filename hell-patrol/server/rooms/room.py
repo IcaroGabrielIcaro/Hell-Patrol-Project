@@ -5,9 +5,9 @@ from server.entities.check_collision import enemy_player_collision, projectile_e
 from server.entities.projectile import Projectile
 from shared.world import WORLD_WIDTH, WORLD_HEIGHT
 import math
-import random
 
 SPAWN_INTERVAL = 3.0
+
 
 class Room:
     def __init__(self):
@@ -17,7 +17,11 @@ class Room:
         self.enemies = []
         self.spawns = []
         self.spawn_timer = 0.0
+        self.game_over = False
 
+    # =========================================================
+    # Players
+    # =========================================================
     def add_player(self, player_id):
         self.players[player_id] = Player()
         self.inputs[player_id] = {"dx": 0, "dy": 0, "angle": 0}
@@ -26,60 +30,56 @@ class Room:
         del self.players[player_id]
         del self.inputs[player_id]
 
+    # =========================================================
+    # Projectiles
+    # =========================================================
     def _create_projectile(self, player, angle):
-        """Cria um projétil na posição da arma do jogador."""
-        # Centro base do sprite
         base_cx = player.x + player.size / 2
         base_cy = player.y + player.size / 2
 
-        # Vetores direcionais
         rad = math.radians(angle)
         front_x = math.cos(rad)
         front_y = -math.sin(rad)
-        side_x = math.sin(rad)
-        side_y = math.cos(rad)
 
-        # Centro lógico do player (rotacionado)
-        cx = base_cx + front_x * player.center_forward + side_x * player.center_side
-        cy = base_cy + front_y * player.center_forward + side_y * player.center_side
-
-        # Ponta da arma (ajuste conforme necessário)
-        RAIO_ARMA = 0
-        AJUSTE_LATERAL = 0
-        spawn_x = cx + front_x * RAIO_ARMA + side_x * AJUSTE_LATERAL
-        spawn_y = cy + front_y * RAIO_ARMA + side_y * AJUSTE_LATERAL
+        spawn_x = base_cx + front_x * player.center_forward
+        spawn_y = base_cy + front_y * player.center_forward
 
         return Projectile(spawn_x, spawn_y, angle)
 
+    # =========================================================
+    # Network actions
+    # =========================================================
     def handle_action(self, player_id, msg):
         player = self.players[player_id]
+
+        # ---------------- RESTART ----------------
+        if msg.get("restart") and self.game_over:
+            self._restart_game()
+            return
+
+        if self.game_over:
+            return  # bloqueia qualquer ação durante game over
 
         if msg["action"] == "move":
             self.inputs[player_id]["dx"] = msg["dx"]
             self.inputs[player_id]["dy"] = msg["dy"]
             player.set_angle(msg.get("angle", 0))
 
-            # Processa tiro se vier junto
             if msg.get("shoot") and player.can_shoot():
                 player.shoot()
                 self.projectiles.append(self._create_projectile(player, msg["angle"]))
 
-            # Processa recarga se vier junto
             if msg.get("reload"):
                 player.reload()
 
-        elif msg["action"] == "shoot":
-            if player.can_shoot():
-                player.shoot()
-                self.projectiles.append(self._create_projectile(player, msg["angle"]))
-
-        elif msg["action"] == "reload":
-            player.reload()
-
+    # =========================================================
+    # Update loop
+    # =========================================================
     def update(self, dt):
-        # --------------------
-        # atualiza jogadores
-        # --------------------
+        if self.game_over:
+            return
+
+        # ---------------- Players ----------------
         for pid, player in self.players.items():
             if not player.alive:
                 continue
@@ -89,10 +89,8 @@ class Room:
             player.set_angle(inp["angle"])
             player.update_timers(dt)
 
-        # --------------------
-        # spawns
-        # --------------------
-        if self.players:  
+        # ---------------- Spawns ----------------
+        if self.players:
             self.spawn_timer += dt
             if self.spawn_timer >= SPAWN_INTERVAL:
                 self.spawn_timer -= SPAWN_INTERVAL
@@ -110,38 +108,23 @@ class Room:
 
         self.spawns = alive_spawns
         self.enemies.extend(new_enemies)
-        
-        # --------------------
-        # atualiza inimigos
-        # --------------------
-        player_list = list(self.players.values())
+
+        # ---------------- Enemies ----------------
         alive_enemies = []
 
         for enemy in self.enemies:
-            enemy.update(player_list, dt)
+            enemy.update(list(self.players.values()), dt)
 
-            killed = False
-
-            # colisão enemy x player
-            for player in player_list:
-                if not player.alive:
-                    continue
-
-                if enemy_player_collision(enemy, player):
+            for player in self.players.values():
+                if player.alive and enemy_player_collision(enemy, player):
                     player.alive = False
-                    killed = False  # inimigo continua vivo
-                    break
 
-            if not killed:
-                alive_enemies.append(enemy)
+            alive_enemies.append(enemy)
 
         self.enemies = alive_enemies
 
-        # --------------------
-        # atualiza projéteis
-        # --------------------
+        # ---------------- Projectiles ----------------
         alive_projectiles = []
-        alive_enemies = self.enemies
 
         for proj in self.projectiles:
             proj.update(dt)
@@ -149,31 +132,51 @@ class Room:
                 continue
 
             hit = False
-
-            for enemy in alive_enemies:
+            for enemy in self.enemies:
                 if projectile_enemy_collision(proj, enemy):
+                    self.enemies.remove(enemy)
                     hit = True
-                    alive_enemies.remove(enemy)
                     break
 
             if not hit:
                 alive_projectiles.append(proj)
 
         self.projectiles = alive_projectiles
-        self.enemies = alive_enemies
 
+        # ---------------- Game Over ----------------
+        self.game_over = self._is_game_over()
 
+    # =========================================================
+    # Game Over / Restart
+    # =========================================================
+    def _is_game_over(self):
+        if not self.players:
+            return False
+
+        return all(not p.alive for p in self.players.values())
+
+    def _restart_game(self):
+        self.projectiles.clear()
+        self.enemies.clear()
+        self.spawns.clear()
+        self.spawn_timer = 0.0
+        self.game_over = False
+
+        for player in self.players.values():
+            player.alive = True
+            player.ammo = player.MAX_AMMO if hasattr(player, "MAX_AMMO") else 10
+            player.cooldown = 0
+            player.x = (WORLD_WIDTH // 2) - (player.size // 2)
+            player.y = (WORLD_HEIGHT // 2) - (player.size // 2)
+
+    # =========================================================
+    # Snapshot
+    # =========================================================
     def get_state(self):
-        reloaded_players = []
-
-        for pid, player in self.players.items():
-            if player.consume_reload_flag():
-                reloaded_players.append(pid)
-
         return {
             "players": {pid: p.to_dict() for pid, p in self.players.items()},
             "enemies": [e.to_dict() for e in self.enemies],
             "spawns": [s.to_dict() for s in self.spawns],
             "projectiles": [p.to_dict() for p in self.projectiles],
-            "reloaded_players": reloaded_players
+            "game_over": self.game_over
         }

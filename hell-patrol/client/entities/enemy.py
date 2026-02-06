@@ -22,14 +22,19 @@ class Enemy:
     def __init__(self, enemy_id, x, y, size, anim_speed=0.10):
         Enemy.load_base_sprites()
 
-        # ===== estado lógico (servidor) =====
         self.id = enemy_id
         self.size = size
-        self.rect = pygame.Rect(x, y, size, size)
 
-        # ===== ajustes de hitbox (CLIENTE) =====
-        self.hitbox_scale = 0.5     
-        self.hitbox_offset_y = -size * 0.35  
+        # ===== posição REAL (float) =====
+        self.pos = pygame.Vector2(x, y)
+
+        # ===== rect só pra render / colisão =====
+        self.rect = pygame.Rect(0, 0, size, size)
+        self.rect.topleft = self.pos
+
+        # ===== ajustes de hitbox =====
+        self.hitbox_scale = 0.5
+        self.hitbox_offset_y = -size * 0.35
 
         # ===== sprites =====
         sprite_scale = int(size * 2)
@@ -44,16 +49,17 @@ class Enemy:
         self.anim_speed = anim_speed
 
         # ===== movimento =====
-        self.last_pos = pygame.Vector2(self.rect.topleft)
+        self.last_pos = self.pos.copy()
 
     # =========================================================
-    # Atualização de posição (pacote do servidor)
+    # Atualização de posição (servidor)
     # =========================================================
     def update_position(self, x, y):
-        self.rect.topleft = (x, y)
+        self.pos.update(x, y)
+        self.rect.topleft = self.pos  # conversão só aqui
 
     # =========================================================
-    # Hitbox REAL (cliente)
+    # Hitbox REAL
     # =========================================================
     def get_hitbox(self):
         w = int(self.size * self.hitbox_scale)
@@ -68,10 +74,8 @@ class Enemy:
     # Atualização local (animação)
     # =========================================================
     def update(self, dt):
-        current_pos = pygame.Vector2(self.rect.topleft)
-        delta = current_pos - self.last_pos
-
-        moving = delta.length_squared() > 1
+        delta = self.pos - self.last_pos
+        moving = delta.length_squared() > 0.0001
 
         if moving:
             self.anim_timer += dt
@@ -82,15 +86,14 @@ class Enemy:
             self.frame = 0
             self.anim_timer = 0.0
 
-        self.last_pos.update(current_pos)
+        self.last_pos.update(self.pos)
 
     # =========================================================
     # Render
     # =========================================================
-    def draw(self, screen, camera, debug=True):
+    def draw(self, screen, camera, debug=False):
         sprite = self.sprites[self.frame]
 
-        # sprite (visual)
         screen.blit(
             sprite,
             (

@@ -18,10 +18,11 @@ class GameplayScene:
         self.local_player_id = player_id
         self.tilemap = TileMap(tiles, tiles_ids, weights)
 
-    # =========================================================
-    # Snapshot vindo do servidor
-    # =========================================================
+        self.game_over = False
+
     def update_state(self, state):
+        self.game_over = state.get("game_over", False)
+
         server_players = state.get("players", {})
         server_enemies = state.get("enemies", [])
         server_spawns = state.get("spawns", [])
@@ -45,9 +46,7 @@ class GameplayScene:
                 player.y = p["y"]
                 player.angle = p.get("angle", 0)
                 player.rect.topleft = (player.x, player.y)
-
-                if "alive" in p:
-                    player.alive = p["alive"]
+                player.alive = p.get("alive", True)
 
         # remove players desconectados
         for pid in list(self.players.keys()):
@@ -161,3 +160,34 @@ class GameplayScene:
 
         for proj in self.projectiles:
             proj.draw(screen, self.camera)
+
+        # ---------------- GAME OVER ----------------
+        if self.game_over:
+            self._draw_game_over(screen)
+
+    # =========================================================
+    # Overlay GAME OVER
+    # =========================================================
+    def _draw_game_over(self, screen):
+        overlay = pygame.Surface(screen.get_size(), pygame.SRCALPHA)
+        overlay.fill((0, 0, 0, 180))
+        screen.blit(overlay, (0, 0))
+
+        font_big = pygame.font.SysFont("arial", 72, bold=True)
+        font_small = pygame.font.SysFont("arial", 28)
+
+        text_game_over = font_big.render("GAME OVER", True, (220, 30, 30))
+        text_restart = font_small.render(
+            "aperte R para reiniciar", True, (220, 220, 220)
+        )
+
+        sw, sh = screen.get_size()
+
+        screen.blit(
+            text_game_over,
+            text_game_over.get_rect(center=(sw // 2, sh // 2 - 40))
+        )
+        screen.blit(
+            text_restart,
+            text_restart.get_rect(center=(sw // 2, sh // 2 + 30))
+        )
