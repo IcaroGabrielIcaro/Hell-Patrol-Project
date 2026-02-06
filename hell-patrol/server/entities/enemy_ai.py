@@ -1,19 +1,27 @@
 import math
+import random
+
+STOP_RADIUS = 10
 
 def follow_closest_player(enemy, players):
-    if not players:
-        return 0, 0
+    alive_players = [p for p in players if getattr(p, "alive", True)]
 
-    closest = min(
-        players,
-        key=lambda p: math.hypot(enemy.x - p.x, enemy.y - p.y)
-    )
+    if alive_players:
+        # segue o player mais próximo
+        closest = min(
+            alive_players,
+            key=lambda p: math.hypot(enemy.x - p.x, enemy.y - p.y)
+        )
 
-    dx = closest.x - enemy.x
-    dy = closest.y - enemy.y
-    dist = math.hypot(dx, dy)
+        dx = closest.x - enemy.x
+        dy = closest.y - enemy.y
+        dist = math.hypot(dx, dy)
 
-    if dist < 1e-3:
-        return 0, 0
+        if dist <= STOP_RADIUS:
+            return 0.0, 0.0
 
-    return dx / dist, dy / dist
+        return dx / dist, dy / dist
+    else:
+        # sem players vivos → direção aleatória
+        angle = random.uniform(0, 2 * math.pi)
+        return math.cos(angle), math.sin(angle)
