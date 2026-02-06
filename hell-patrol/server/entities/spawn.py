@@ -1,7 +1,7 @@
 import random
 from shared.world import WORLD_WIDTH, WORLD_HEIGHT
 
-SPAWN_DELAY = 5.0  # segundos até virar inimigo
+SPAWN_DELAY = 1.5  # segundos até virar inimigo
 
 _spawn_id = 0
 def next_spawn_id():
