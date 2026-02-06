@@ -3,7 +3,8 @@ import math
 
 SPEED = 1000
 MAX_AMMO = 10
-FIRE_COOLDOWN = 0.28  # agora funciona corretamente
+FIRE_COOLDOWN = 0.28
+
 
 class Player:
     def __init__(self):
@@ -11,9 +12,16 @@ class Player:
         self.x = (WORLD_WIDTH // 2) - (PLAYER_SIZE // 2)
         self.y = (WORLD_HEIGHT // 2) - (PLAYER_SIZE // 2)
         self.angle = 0
-        
+
+        # estado vital
         self.alive = True
-         
+
+        # 🎯 offset do centro no espaço local do player
+        # (usado para spawn de projéteis / muzzle / etc)
+        self.center_forward = 0   # frente (direção que olha)
+        self.center_side = 0      # lateral (direita do player)
+
+        # combate
         self.ammo = MAX_AMMO
         self.cooldown = 0.0
         self.just_reloaded = False
@@ -21,6 +29,7 @@ class Player:
     def move(self, dx, dy, dt):
         if not self.alive:
             return
+
         length = math.hypot(dx, dy)
         if length > 0:
             dx /= length
@@ -41,7 +50,7 @@ class Player:
             self.cooldown -= dt
 
     def can_shoot(self):
-        return (self.ammo > 0 and self.cooldown <= 0) and self.alive
+        return self.alive and self.ammo > 0 and self.cooldown <= 0
 
     def shoot(self):
         if not self.can_shoot():

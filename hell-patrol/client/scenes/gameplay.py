@@ -37,8 +37,7 @@ class GameplayScene:
                     scale=2.7,
                     anim_speed=0.12
                 )
-                # define alive como True inicialmente
-                player.alive = True
+                player.alive = p.get("alive", True)
                 self.players[pid] = player
             else:
                 player = self.players[pid]
@@ -46,17 +45,18 @@ class GameplayScene:
                 player.y = p["y"]
                 player.angle = p.get("angle", 0)
                 player.rect.topleft = (player.x, player.y)
-                # se o servidor envia estado de alive, pode atualizar aqui
+
                 if "alive" in p:
                     player.alive = p["alive"]
 
-        # remove players que não existem mais
+        # remove players desconectados
         for pid in list(self.players.keys()):
             if pid not in server_players:
                 del self.players[pid]
 
         # ---------------- Spawns ----------------
         alive_spawn_ids = set()
+
         for s in server_spawns:
             sid = s["id"]
             alive_spawn_ids.add(sid)
@@ -74,6 +74,7 @@ class GameplayScene:
 
         # ---------------- Enemies ----------------
         alive_enemy_ids = set()
+
         for e in server_enemies:
             eid = e["id"]
             alive_enemy_ids.add(eid)
@@ -109,25 +110,29 @@ class GameplayScene:
         for enemy in self.enemies.values():
             enemy.update(dt)
 
-        # atualiza jogadores
         for player in self.players.values():
             player.update(dt, moving=True)
 
     # =========================================================
-    # Helper da câmera
+    # Seleção do alvo da câmera
     # =========================================================
     def get_camera_target(self):
         local = self.players.get(self.local_player_id)
         if local and getattr(local, "alive", True):
             return local
 
-        # escolhe outro player vivo mais próximo do local
-        alive_players = [p for p in self.players.values() if getattr(p, "alive", True)]
+        alive_players = [
+            p for p in self.players.values()
+            if getattr(p, "alive", True)
+        ]
+
         if not alive_players:
             return None
 
         if local:
-            alive_players.sort(key=lambda p: (p.x - local.x)**2 + (p.y - local.y)**2)
+            alive_players.sort(
+                key=lambda p: (p.x - local.x) ** 2 + (p.y - local.y) ** 2
+            )
             return alive_players[0]
 
         return alive_players[0]
@@ -139,9 +144,9 @@ class GameplayScene:
         if not self.players:
             return
 
-        target_player = self.get_camera_target()
-        if target_player:
-            self.camera.update(target_player.rect)
+        target = self.get_camera_target()
+        if target:
+            self.camera.update(target.rect)
 
         self.tilemap.draw(screen, self.camera)
 

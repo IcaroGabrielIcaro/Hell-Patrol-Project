@@ -3,13 +3,12 @@ import math
 from client.core.input import get_movement
 from shared.protocol import make_move
 
+
 class Game:
     def __init__(self, screen, network, scene):
         self.screen = screen
         self.network = network
         self.scene = scene
-
-        self.reloading = False
 
         # mira
         self.crosshair_img = pygame.image.load(
@@ -32,9 +31,10 @@ class Game:
                 if event.type == pygame.QUIT:
                     running = False
 
+            # ---------------- Input ----------------
             dx, dy = get_movement()
-
             mx, my = pygame.mouse.get_pos()
+
             player = self.scene.players.get(self.network.player_id)
 
             if player:
@@ -48,7 +48,9 @@ class Game:
             mouse_buttons = pygame.mouse.get_pressed()
             keys = pygame.key.get_pressed()
 
+            # ---------------- Network send ----------------
             msg = make_move(dx, dy, angle)
+            msg["player_id"] = self.network.player_id
 
             if mouse_buttons[0]:
                 msg["shoot"] = True
@@ -58,14 +60,23 @@ class Game:
 
             self.network.send(msg)
 
+            # ---------------- Network receive ----------------
             state = self.network.receive()
             self.scene.update_state(state)
-            self.scene.update_animations(dt) 
+            self.scene.update_animations(dt)
+
+            # ---------------- Render ----------------
             self.screen.fill((30, 30, 30))
             self.scene.draw(self.screen)
 
+            # ---------------- Crosshair ----------------
             mx, my = pygame.mouse.get_pos()
-            ammo = state["players"][self.network.player_id]["ammo"]
+
+            players_state = state.get("players", {})
+            if self.network.player_id in players_state:
+                ammo = players_state[self.network.player_id].get("ammo", 0)
+            else:
+                ammo = 0
 
             img = self.crosshair_empty if ammo == 0 else self.crosshair_img
             rect = img.get_rect(center=(mx, my))
